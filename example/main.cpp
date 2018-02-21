@@ -1,15 +1,17 @@
 #include <iostream>
 
-#include <astro/test.h>
+#include <astro/SpiceCore.h>
 
 
-int main()
+int main(int argc, char **argv)
 {
     std::cout << "In main..." << std::endl;
 
-    astro::astro_func();
 
-    astro::load_kernel("naif0012.tls");
+    astro::Spice().loadKernel("../data/spice/lsk/naif0012.tls");
+
+    // This will throw an exception:
+    astro::Spice().loadKernel("NoSuchFile");
 
 
     return 0;
