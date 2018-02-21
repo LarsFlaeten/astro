@@ -18,8 +18,11 @@ set(LIB_INSTALL_DIR "lib" CACHE STRING "Library directory name (lib/lib32/lib64)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 add_definitions("-fPIC")
 
+enable_testing()
+add_test(NAME       runTests
+         COMMAND    runTests)
 
 # Sub dirs
 add_subdirectory(example)
 add_subdirectory(astro)
-#add_subdirectory(test)
+add_subdirectory(test)
