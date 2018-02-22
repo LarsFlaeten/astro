@@ -45,4 +45,7 @@ TEST_F(SpiceCoreTest, LoadKernelTest1)
     ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/lsk/naif0012.tls"));
 
     ASSERT_THROW(astro::Spice().loadKernel("NoFileWithThisName"), astro::SpiceException);    
+
+    // Test loading same kernel twice, Spice should handle this fine
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/lsk/naif0012.tls"));
 }
