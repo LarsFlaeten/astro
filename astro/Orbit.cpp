@@ -73,7 +73,10 @@ OrbitElements OrbitElements::fromStateVectorOE(const State& state, double mu)
     //         { acos(N_x / n)          if N_y >= 0
     // Omega = { 
     //         { 360 - acos(N_x / n)    if N_y < 0
-    oe.omega = acos(N.x / n);
+    if(n>0.0)
+        oe.omega = acos(N.x / n);
+    else
+        oe.omega = 0.0;
     if(N.y < 0.0)
         oe.omega = 2.0*astro::PI - oe.omega;
 
@@ -91,9 +94,14 @@ OrbitElements OrbitElements::fromStateVectorOE(const State& state, double mu)
     //     { acos (N dot E / (n*e) )        if E_z >= 0
     // w = {
     //     { 360 - acos (N dot E / (n*e) )  if E_z <  0
-    vec3d N_norm = N.normalize();
     vec3d E_norm = E.normalize();
-    oe.w = acos(N_norm.dotproduct(E_norm));
+    if( n > 0.0)
+    {
+        vec3d N_norm = N.normalize();
+       oe.w = acos(N_norm.dotproduct(E_norm));
+    } else
+        oe.w = 0.0;
+
     if(E.z < 0.0)
         oe.w = 2.0*astro::PI - oe.w;
 
@@ -107,11 +115,23 @@ OrbitElements OrbitElements::fromStateVectorOE(const State& state, double mu)
         oe.theta = 2.0*astro::PI - oe.theta;
 
     // Additional elements:
-    // Eccentric anomaly:
-    double ea = 2.0*atan( tan(oe.theta / 2.0) / sqrt( (1 + oe.e) / (1 - oe.e) ) );
+    if (oe.e < 1.0)
+    {
+        // Eccentric anomaly:
+        double ea = 2.0*atan( tan(oe.theta / 2.0) / sqrt( (1 + oe.e) / (1 - oe.e) ) );
 
-    // Mean anomaly:
-    oe.M0 = ea - oe.e*sin(ea);
+        // Mean anomaly:
+        oe.M0 = ea - oe.e*sin(ea);
+    } else
+    {
+        // http://control.asu.edu/Classes/MAE462/462Lecture05.pdf
+        // Hyperbolic anomaly:
+        double H = 2.0*atanh( (sqrt( (oe.e-1) / (oe.e + 1)  ) ) * tan(oe.theta/2) );
+    
+        oe.M0 = oe.e*sinh(H) - H;
+
+    }
+
 
     // Periapsis distance:
     oe.rp = oe.h*oe.h / mu * (1.0 / (1.0 + oe.e));
@@ -282,7 +302,11 @@ OrbitElements OrbitElements::fromStateVectorSpice(const State& state, double mu)
     // [1], (4.13b)
     double r = state.r.length();
     double v_r  = state.r.dotproduct(state.v) / r;
-    oe.theta = acos( (1.0 / oe.e) * (oe.h*oe.h/(mu*r ) - 1) );
+    if(oe.e > 1.0E-3)
+        oe.theta = acos( (1.0 / oe.e) * (oe.h*oe.h/(mu*r ) - 1) );
+    else
+        oe.theta = 0.0;
+
     if(v_r < 0)
         oe.theta = 2.0*astro::PI - oe.theta;
     oe.M0 = elts[5];

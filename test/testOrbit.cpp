@@ -93,18 +93,27 @@ TEST_F(OrbitTest, OrbitalElementsFromState2)
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
-    std::cout << "Input state:" << std::endl;
-    print(state);
+    //std::cout << "Input state:" << std::endl;
+    //print(state);
 
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, mu_earth);
     astro::OrbitElements oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu_earth);
+    ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
     
-    print(oe);   
-    print(oe2);
+    //print(oe);   
+    //print(oe2);
 }
 
 TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
 {
+	double dpr = astro::DEGPERRAD;
     double mu = 398600.0;
 
     // [1], Example 4.3:
@@ -129,15 +138,183 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu), astro::AstroException);
     ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, mu), astro::SpiceException);
 
-    // circular orbit:
+    // circular orbit, incl = 45:
+    astro::OrbitElements oe2;
     r = (6378.0 + 400);
     state.r = vec3d(r, 0.0, 0.0);
     v = 7.66895;
     state.v = vec3d(0, v/sqrt(2), v/sqrt(2));
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
-    print(oe);
-    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, mu));
-    print(oe);
+    //print(oe);
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    //print(oe2);
+    ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+    
+	// Elliptic orbit, incl = 45:
+    r = (6378.0 + 400);
+    state.r = vec3d(r, 0.0, 0.0);
+    v = 7.66895;
+    state.v = vec3d(0, v*1.1/sqrt(2), v*1.1/sqrt(2));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    //print(oe);
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    //print(oe2);
+    ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+
+    // hyperbolic orbit, incl = 45:
+    r = (6378.0 + 400);
+    state.r = vec3d(r, 0.0, 0.0);
+    v = 7.66895;
+    state.v = vec3d(0, v*1.5/sqrt(2), v*1.5/sqrt(2));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    //print(oe);
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    //print(oe2);
+    ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+
+    // hyperbolic orbit 2, anomaly != 0:
+    // From [1], Ex. 4.7:
+    state.r = vec3d(-4040, 4815, 3629);
+    state.v = vec3d(-10.39, -4.772, 1.744);
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    //print(oe);
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    //print(oe2);
+	ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+	ASSERT_LT(fabs(oe.h-80000), 30);
+    ASSERT_LT(fabs(oe.i*dpr-30), 0.01);
+    ASSERT_LT(fabs(oe.omega*dpr-40), 0.022);
+    ASSERT_LT(fabs(oe.e-1.4), 1.0E-2);
+    ASSERT_LT(fabs(oe.w*dpr-60), 0.02);
+    ASSERT_LT(fabs(oe.theta*dpr-30), 0.01);
+
+
+
+
+
+
+	// Equatorial circular orbit
+	state.v = vec3d(0, v, 0);
+	ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+	ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+	//print(oe);
+	//print(oe2);
+    ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+
+	// Equatorial elliptic orbit
+	state.v = vec3d(0, v*1.1, 0);
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    //print(oe);
+    //print(oe2);
+    ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+
+    // Equatorial hyperbolic orbit
+    state.v = vec3d(0, v*1.5, 0);
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    //print(oe);
+    //print(oe2);
+    ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+
+
+	// Polar circular orbit
+	state.v = vec3d(0, 0, v);
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+	//print(oe);
+    //print(oe2);
+	ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+
+	// Polar elliptic orbit
+	state.v = vec3d(0, 0, v*1.1);
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    //print(oe);
+    //print(oe2);
+    ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+
+    // Polar hyperbolic orbit
+    state.v = vec3d(0, 0, v*1.5);
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    //print(oe);
+    //print(oe2);
+    ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
+    ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
+    ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
+    ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
+    ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
+    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
+    ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+
+
+
+
 
     
 }
@@ -297,6 +474,12 @@ TEST_F(OrbitTest, OrbitElementsToStateVector2)
 
     astro::State state2 = oe.toStateVectorOE(mu_earth);
 
+	ASSERT_LT(fabs(state.r.x-state2.r.x), 1.0E-5);
+    ASSERT_LT(fabs(state.r.y-state2.r.y), 1.0E-5);
+    ASSERT_LT(fabs(state.r.z-state2.r.z), 1.0E-5);
+    ASSERT_LT(fabs(state.v.x-state2.v.x), 1.0E-5);
+    ASSERT_LT(fabs(state.v.y-state2.v.y), 1.0E-5);
+    ASSERT_LT(fabs(state.v.z-state2.v.z), 1.0E-5);
 
 
 
