@@ -1,4 +1,5 @@
 set(LIBNAME "astro")
+message(STATUS " ***** ASTRO ***** ")
 
 # Sources
 include_directories("${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/libraries" )
@@ -13,6 +14,8 @@ set(SPICE_LIBS cspice)
 message(STATUS "Using libs:  " ${LIBS})
 message(STATUS "Include dirs:" ${PROJECT_SOURCE_DIR} ", " ${PROJECT_SOURCE_DIR}/libraries)
 
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17")
+message(STATUS "Using CXX flags: " ${CMAKE_CXX_FLAGS})
 link_directories(${PROJECT_SOURCE_DIR}/libraries ${PROJECT_SOURCE_DIR}/libraries/cspice)
 
 # Static or shared?

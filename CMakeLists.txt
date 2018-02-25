@@ -1,6 +1,5 @@
 project(ASTRO CXX C)
 cmake_minimum_required(VERSION 2.6)
-cmake_policy(VERSION 2.6)
 
 # Avoid source tree pollution
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
