@@ -21,7 +21,7 @@ using ork::mat4d;
 namespace astro
 {
 
-OrbitElements OrbitElements::fromStateVectorOE(const State& state, double mu)
+OrbitElements OrbitElements::fromStateVectorOE(const State& state, const EphemerisTime& epoch, double mu)
 {
     if(mu < 0)
         throw AstroException("Non-positive mass give for primary body");
@@ -136,6 +136,11 @@ OrbitElements OrbitElements::fromStateVectorOE(const State& state, double mu)
     // Periapsis distance:
     oe.rp = oe.h*oe.h / mu * (1.0 / (1.0 + oe.e));
 
+    /// Assign epoch and mu
+    oe.mu = mu;
+    oe.epoch = epoch;
+
+
     return oe;
 }
 
@@ -226,7 +231,7 @@ OrbitElements OrbitElements::fromstateVectorOEOpt(const State& state, double mu)
 }
 #endif
 
-State   OrbitElements::toStateVectorOE(double mu)
+State   OrbitElements::toStateVectorOE()
 {
     // From [1], Algorithm 4.5:
 
@@ -267,11 +272,11 @@ State   OrbitElements::toStateVectorOE(double mu)
     return state;
 }
 
-OrbitElements OrbitElements::fromStateVectorSpice(const State& state, double mu)
+OrbitElements OrbitElements::fromStateVectorSpice(const State& state, const EphemerisTime& epoch, double mu)
 {
     astro::Spice(); // Init spice
     
-    double et = 0.0;
+    double et = epoch.getETValue();
     double elts[8];
 
     // need mutex?
@@ -311,12 +316,26 @@ OrbitElements OrbitElements::fromStateVectorSpice(const State& state, double mu)
         oe.theta = 2.0*astro::PI - oe.theta;
     oe.M0 = elts[5];
 
+    // Assign epoch and mu
+    oe.mu = mu;
+    oe.epoch = epoch;
+
     return oe;
 }
 
 
-State   OrbitElements::toStateVectorSpice(double mu)
+State   OrbitElements::toStateVectorSpice()
 {
+    double elts[8];
+
+    elts[0] = rp;
+    elts[1] = e;
+    elts[2] = i;
+    elts[3] = omega;
+    elts[4] = w;
+    elts[5] = M0;
+    elts[6] = epoch.getETValue();
+    elts[7] = mu;
 
 }
 }

@@ -41,31 +41,33 @@ struct OrbitElements
     double omega; // RA of the ascending node
     double e;   // Eccentricity
     double w;   // Argument of perigee (originally this is small omega, but we use w...)
-    double theta; // True anomaly
-    double M0;  // Mean anomaly
+    double theta; // True anomaly at epoch
+    double M0;  // Mean anomaly at epoch
     double rp;   // Periapsis distance
+    double mu;   // The gravitaional parameter of the primary body
+    EphemerisTime epoch;
 
     // Convert at state vector to orbit elements for the same frame of reference
     // Using method from [2]
     // mu is the gravitational parameter of the reference (attracting) body
-    static OrbitElements fromStateVectorOE(const State& state, double mu);
+    static OrbitElements fromStateVectorOE(const State& state, const EphemerisTime& epoch, double mu);
+    
     	
     // Did some optimization, but only gained a few percent (and the code is not that clear anymore)
     // SKip it for now...
     //static OrbitElements fromstateVectorOEOpt(const State& state, double mu);
 
     // Using the Spice library
-    static OrbitElements fromStateVectorSpice(const State& state, double mu);
+    static OrbitElements fromStateVectorSpice(const State& state,const EphemerisTime& epoch,  double mu);
 
 
     // Converts the current orbital elements to a state vector in the same frame of reference
-    // mu is the gravitational parameter of the reference (attracting) body
     // Using [1]
-    State   toStateVectorOE(double mu);
+    State   toStateVectorOE();
 
 
     // Using the spice method
-    State   toStateVectorSpice(double mu);
+    State   toStateVectorSpice();
 };
 
 
@@ -82,6 +84,8 @@ std::ostream& operator << (std::ostream& os, const astro::OrbitElements& oe)
     os << "True anomaly:        " << oe.theta*dpr<< " [Deg]\n";
     os << "Mean anomaly:        " << oe.M0*dpr  << " [Deg]\n";
     os << "Periapsis distance:  " << oe.rp      << " [km]\n"; 
+    os << "Epoch:               " << oe.epoch.getETValue() << " [seconds]\n";
+    os << "mu:                  " << oe.mu << " [km³/s²]\n";
 
     return os;
 } 
@@ -97,7 +101,9 @@ void print(const astro::OrbitElements& oe)
     std::cout << "True anomaly:        " << oe.theta*dpr<< " [Deg]\n";
     std::cout << "Mean anomaly:        " << oe.M0*dpr  << " [Deg]\n";
     std::cout << "Periapsis distance:  " << oe.rp      << " [km]\n";
-	std::cout << std::endl; 
+    std::cout << "Epoch:               " << oe.epoch.getETValue() << " [seconds]\n";
+    std::cout << "mu:                  " << oe.mu << " [km³/s²]\n";
+    std::cout << std::endl; 
 
 
 }

@@ -31,13 +31,18 @@ protected:
     // Code here will be called immediately after each test (right
     // before the destructor).
     virtual void TearDown();
+
+
+    EphemerisTime et;
+    double mu_earth;
 };
 
 
 
 OrbitTest::OrbitTest()
+   : et(), mu_earth(398600.0)
 {
-
+    
 }
 
 OrbitTest::~OrbitTest()
@@ -55,14 +60,13 @@ void OrbitTest::TearDown()
 
 TEST_F(OrbitTest, OrbitalElementsFromState)
 {
-    double mu_earth = 398600.0;
 
     // [1], Example 4.3:
     astro::State   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
-    astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, mu_earth);
+    astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
     // Compare with [1] (Those are quite rounded numbers, so we cant be too accurate)
     ASSERT_LT(fabs(oe.h- 58310), 2.0);
     ASSERT_LT(fabs(oe.i * astro::DEGPERRAD - 153.2), 1.0E-1);
@@ -74,7 +78,7 @@ TEST_F(OrbitTest, OrbitalElementsFromState)
     // Invert the velocti, and see of we get a prograde orbit.
     double incl_old = oe.i * astro::DEGPERRAD;
     state.v *= -1.0;
-    oe = astro::OrbitElements::fromStateVectorOE(state, mu_earth);
+    oe = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
     double incl_new = oe.i * astro::DEGPERRAD;
     // Retrograde
     ASSERT_GT(incl_old, 90.0);
@@ -86,7 +90,6 @@ TEST_F(OrbitTest, OrbitalElementsFromState)
 
 TEST_F(OrbitTest, OrbitalElementsFromState2)
 {
-    double mu_earth = 398600.0;
 
     // [1], Example 4.3:
     astro::State   state;
@@ -96,8 +99,8 @@ TEST_F(OrbitTest, OrbitalElementsFromState2)
     //std::cout << "Input state:" << std::endl;
     //print(state);
 
-    astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, mu_earth);
-    astro::OrbitElements oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu_earth);
+    astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
+    astro::OrbitElements oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu_earth);
     ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
     ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
@@ -114,7 +117,7 @@ TEST_F(OrbitTest, OrbitalElementsFromState2)
 TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
 {
 	double dpr = astro::DEGPERRAD;
-    double mu = 398600.0;
+    double mu = mu_earth;
 
     // [1], Example 4.3:
     astro::State   state;
@@ -124,19 +127,19 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     double r = state.r.length();
     // Negative mass
     astro::OrbitElements oe;
-	ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, -1000.0), astro::AstroException);
-    ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, -1000.0), astro::SpiceException);
+	ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, -1000.0), astro::AstroException);
+    ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, et, -1000.0), astro::SpiceException);
 
     // Zero velocity
     state.v = vec3d::ZERO;
-    ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu), astro::AstroException);
-    ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, mu), astro::SpiceException);
+    ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu), astro::AstroException);
+    ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, et, mu), astro::SpiceException);
 
     // Zero radius
     state.v = vec3d(-3.457, 6.618, 2.533);
     state.r = vec3d::ZERO;
-    ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu), astro::AstroException);
-    ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, mu), astro::SpiceException);
+    ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu), astro::AstroException);
+    ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, et, mu), astro::SpiceException);
 
     // circular orbit, incl = 45:
     astro::OrbitElements oe2;
@@ -144,9 +147,9 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     state.r = vec3d(r, 0.0, 0.0);
     v = 7.66895;
     state.v = vec3d(0, v/sqrt(2), v/sqrt(2));
-    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     //print(oe);
-    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe2);
     ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
     ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
@@ -162,9 +165,9 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     state.r = vec3d(r, 0.0, 0.0);
     v = 7.66895;
     state.v = vec3d(0, v*1.1/sqrt(2), v*1.1/sqrt(2));
-    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     //print(oe);
-    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe2);
     ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
     ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
@@ -180,9 +183,9 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     state.r = vec3d(r, 0.0, 0.0);
     v = 7.66895;
     state.v = vec3d(0, v*1.5/sqrt(2), v*1.5/sqrt(2));
-    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     //print(oe);
-    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe2);
     ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
     ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
@@ -197,9 +200,9 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     // From [1], Ex. 4.7:
     state.r = vec3d(-4040, 4815, 3629);
     state.v = vec3d(-10.39, -4.772, 1.744);
-    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     //print(oe);
-    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe2);
 	ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
     ASSERT_LT(fabs(oe.i-oe2.i), 0.001);
@@ -223,8 +226,8 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
 
 	// Equatorial circular orbit
 	state.v = vec3d(0, v, 0);
-	ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
-	ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+	ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
+	ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
 	//print(oe);
 	//print(oe2);
     ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
@@ -238,8 +241,8 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
 
 	// Equatorial elliptic orbit
 	state.v = vec3d(0, v*1.1, 0);
-    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
-    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe);
     //print(oe2);
     ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
@@ -253,8 +256,8 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
 
     // Equatorial hyperbolic orbit
     state.v = vec3d(0, v*1.5, 0);
-    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
-    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe);
     //print(oe2);
     ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
@@ -269,8 +272,8 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
 
 	// Polar circular orbit
 	state.v = vec3d(0, 0, v);
-    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
-    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
 	//print(oe);
     //print(oe2);
 	ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
@@ -284,8 +287,8 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
 
 	// Polar elliptic orbit
 	state.v = vec3d(0, 0, v*1.1);
-    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
-    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe);
     //print(oe2);
     ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
@@ -299,8 +302,8 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
 
     // Polar hyperbolic orbit
     state.v = vec3d(0, 0, v*1.5);
-    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, mu));
-    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, mu));
+    ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
+    ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe);
     //print(oe2);
     ASSERT_LT(fabs(oe.h-oe2.h), 0.01);
@@ -356,8 +359,6 @@ TEST_F(OrbitTest, OrbitalElementsFromStateOpt)
 // Do 1 000 000 evaluations of the algorithm
 TEST_F(OrbitTest, OrbitalElementsOEBenchmarkTime)
 {
-    double mu_earth = 398600.0;
-
     // [1], Example 4.3:
     astro::State   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
@@ -366,14 +367,13 @@ TEST_F(OrbitTest, OrbitalElementsOEBenchmarkTime)
     astro::OrbitElements oe;
     for(auto i = 0; i < 1000000; ++i)
     {
-        oe = astro::OrbitElements::fromStateVectorOE(state, mu_earth);
+        oe = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
     }
 
 }
 
 TEST_F(OrbitTest, OrbitalElementsSpiceBenchmarkTime)
 {
-    double mu_earth = 398600.0;
 
     // [1], Example 4.3:
     astro::State   state;
@@ -383,7 +383,7 @@ TEST_F(OrbitTest, OrbitalElementsSpiceBenchmarkTime)
     astro::OrbitElements oe;
     for(auto i = 0; i < 1000000; ++i)
     {
-        oe = astro::OrbitElements::fromStateVectorSpice(state, mu_earth);
+        oe = astro::OrbitElements::fromStateVectorSpice(state, et, mu_earth);
     }
 
 }
@@ -434,7 +434,6 @@ TEST_F(OrbitTest, OrkRotationTest)
 TEST_F(OrbitTest, OrbitElementsToStateVector)
 {
     double rpd = astro::RADPERDEG;
-    double mu_earth = 398600.0;
 
     // [1], example 4.7:
     astro::OrbitElements oe;
@@ -444,11 +443,13 @@ TEST_F(OrbitTest, OrbitElementsToStateVector)
     oe.omega = 40.0 * rpd;
     oe.w = 60.0 * rpd;
     oe.theta = 30 * rpd;
+    oe.epoch = et;
+    oe.mu = mu_earth;
     
-    astro::State state = oe.toStateVectorOE(mu_earth);
+    astro::State state = oe.toStateVectorOE();
 
 
-    astro::OrbitElements oe2 = astro::OrbitElements::fromStateVectorOE(state, mu_earth);
+    astro::OrbitElements oe2 = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
 
 
     ASSERT_LT(fabs(oe2.h-oe.h), 1.0E-5);
@@ -463,17 +464,16 @@ TEST_F(OrbitTest, OrbitElementsToStateVector)
 
 TEST_F(OrbitTest, OrbitElementsToStateVector2)
 {
-    double mu_earth = 398600.0;
-
     // [1], Example 4.3:
     astro::State   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
-    astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, mu_earth);
+    astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
 
-    astro::State state2 = oe.toStateVectorOE(mu_earth);
-
+    astro::State state2 = oe.toStateVectorOE();
+    //print(state);
+    //print(state2);
 	ASSERT_LT(fabs(state.r.x-state2.r.x), 1.0E-5);
     ASSERT_LT(fabs(state.r.y-state2.r.y), 1.0E-5);
     ASSERT_LT(fabs(state.r.z-state2.r.z), 1.0E-5);
