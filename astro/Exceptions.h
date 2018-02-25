@@ -6,6 +6,55 @@
 namespace astro
 {
 
+class AstroException : public std::exception
+{
+public:
+    explicit AstroException(const std::string& _short_msg, const std::string& _long_msg) : short_msg(_short_msg), long_msg(_long_msg)
+    {
+
+    }
+
+    explicit AstroException(const char* _short_msg, const char* _long_msg) : short_msg(_short_msg), long_msg(_long_msg)
+    {
+
+    } 
+
+
+	explicit AstroException(const std::string& _short_msg)
+      : short_msg(_short_msg), long_msg("")
+    {
+
+    }
+
+    explicit AstroException(const char* _short_msg)
+      : short_msg(_short_msg), long_msg("")
+    {
+
+    }
+
+
+	virtual const char* what() const noexcept
+    {
+        return short_msg.c_str();
+    }
+
+    const std::string& getShortMessage() const
+    {
+        return short_msg;
+    }
+
+    const std::string& getLongMessage() const
+    {
+        return long_msg;
+    }
+private:
+	std::string short_msg;
+    std::string long_msg;
+	
+
+};
+
+
 class SpiceException : public std::exception
 {
 public:
