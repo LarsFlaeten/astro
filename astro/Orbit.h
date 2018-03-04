@@ -51,7 +51,10 @@ struct OrbitElements
     // Using method from [2]
     // mu is the gravitational parameter of the reference (attracting) body
     static OrbitElements fromStateVectorOE(const State& state, const EphemerisTime& epoch, double mu);
-    
+
+
+    // Given eccentricity e and true anomaly, computes the mean anomaly
+    static double meanAnomalyFromTrueAnomaly(double trueAnomaly, double e);    
     	
     // Did some optimization, but only gained a few percent (and the code is not that clear anymore)
     // SKip it for now...
@@ -67,7 +70,10 @@ struct OrbitElements
 
 
     // Using the spice method
-    State   toStateVectorSpice();
+    // Solves for et (which can be different than epoch of the elements
+    // et: Time to resolve the state vector
+    State   toStateVectorSpice(const EphemerisTime& et);
+
 };
 
 

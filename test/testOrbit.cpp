@@ -445,7 +445,8 @@ TEST_F(OrbitTest, OrbitElementsToStateVector)
     oe.theta = 30 * rpd;
     oe.epoch = et;
     oe.mu = mu_earth;
-    
+    oe.rp = oe.h*oe.h / oe.mu * (1.0 / (1.0 + oe.e));
+
     astro::State state = oe.toStateVectorOE();
 
 
@@ -480,6 +481,55 @@ TEST_F(OrbitTest, OrbitElementsToStateVector2)
     ASSERT_LT(fabs(state.v.x-state2.v.x), 1.0E-5);
     ASSERT_LT(fabs(state.v.y-state2.v.y), 1.0E-5);
     ASSERT_LT(fabs(state.v.z-state2.v.z), 1.0E-5);
+}
+
+TEST_F(OrbitTest, OrbitElementsToStateVectorSpice1)
+{
+    double rpd = astro::RADPERDEG;
+
+    // [1], example 4.7: 
+    // Set the orbit elements directly    
+    astro::OrbitElements oe;
+    oe.h = 80000; // km²/s
+    oe.e = 1.4; 
+    oe.i = 30.0 * rpd;
+    oe.omega = 40.0 * rpd;
+    oe.w = 60.0 * rpd;
+    oe.theta = 30 * rpd;
+    oe.epoch = et;
+    oe.mu = mu_earth;
+    oe.rp = oe.h*oe.h / oe.mu * (1.0 / (1.0 + oe.e));
+    oe.M0 = astro::OrbitElements::meanAnomalyFromTrueAnomaly(oe.theta, oe.e);
+    print(oe);
+
+    astro::State state0 = oe.toStateVectorOE();
+	astro::State state1 = oe.toStateVectorSpice(et);
+    
+    print(state0);
+    print(state1);
+
+    astro::OrbitElements oe2 = astro::OrbitElements::fromStateVectorOE(state1, et, mu_earth);
+    print(oe2);
+    astro::OrbitElements oe3 = astro::OrbitElements::fromStateVectorSpice(state1, et, mu_earth);
+    print(oe3);
+    //ASSERT_EQ(1,0);
+
+}
+TEST_F(OrbitTest, OrbitElementsToStateVectorSpice2)
+{
+    // [1], Example 4.3:
+    astro::State   state;
+    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+
+    astro::OrbitElements oe = astro::OrbitElements::fromStateVectorSpice(state, et, mu_earth);
+	print(oe);
+
+	astro::State state1 = oe.toStateVectorSpice(et);
+	std::cout << "Original" << std::endl;
+	print(state);
+	std::cout << "Recovered" << std::endl;
+    print(state1);
 
 
 

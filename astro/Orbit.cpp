@@ -114,24 +114,8 @@ OrbitElements OrbitElements::fromStateVectorOE(const State& state, const Ephemer
     if(v_r < 0.0)
         oe.theta = 2.0*astro::PI - oe.theta;
 
-    // Additional elements:
-    if (oe.e < 1.0)
-    {
-        // Eccentric anomaly:
-        double ea = 2.0*atan( tan(oe.theta / 2.0) / sqrt( (1 + oe.e) / (1 - oe.e) ) );
-
-        // Mean anomaly:
-        oe.M0 = ea - oe.e*sin(ea);
-    } else
-    {
-        // http://control.asu.edu/Classes/MAE462/462Lecture05.pdf
-        // Hyperbolic anomaly:
-        double H = 2.0*atanh( (sqrt( (oe.e-1) / (oe.e + 1)  ) ) * tan(oe.theta/2) );
-    
-        oe.M0 = oe.e*sinh(H) - H;
-
-    }
-
+    // Mean anomaly
+    oe.M0 = meanAnomalyFromTrueAnomaly(oe.theta, oe.e);
 
     // Periapsis distance:
     oe.rp = oe.h*oe.h / mu * (1.0 / (1.0 + oe.e));
@@ -142,6 +126,26 @@ OrbitElements OrbitElements::fromStateVectorOE(const State& state, const Ephemer
 
 
     return oe;
+}
+
+double OrbitElements::meanAnomalyFromTrueAnomaly(double trueAnomaly, double e)
+{
+    if (e < 1.0)
+    {
+        // Eccentric anomaly:
+        double E = 2.0*atan( tan(trueAnomaly / 2.0) / sqrt( (1 + e) / (1 - e) ) );
+
+        // Mean anomaly:
+        return E - e*sin(E);
+    } else
+    {
+        // http://control.asu.edu/Classes/MAE462/462Lecture05.pdf
+        // Hyperbolic anomaly:
+        double H = 2.0*atanh( (sqrt( (e-1) / (e + 1)  ) ) * tan(trueAnomaly/2.0) );
+    
+        return e*sinh(H) - H;
+
+    }
 }
 
 #if 0
@@ -324,7 +328,7 @@ OrbitElements OrbitElements::fromStateVectorSpice(const State& state, const Ephe
 }
 
 
-State   OrbitElements::toStateVectorSpice()
+State   OrbitElements::toStateVectorSpice(const EphemerisTime& et)
 {
     double elts[8];
 
@@ -337,5 +341,24 @@ State   OrbitElements::toStateVectorSpice()
     elts[6] = epoch.getETValue();
     elts[7] = mu;
 
+    for(auto i = 0; i < 8; ++i)
+        std::cout << elts[i] << std::endl;
+
+    double st[6];
+    {
+        std::lock_guard<std::mutex> lock(astro::Spice().mutex());
+        conics_c(elts, et.getETValue(), st);
+    }
+    astro::Spice().checkError();
+
+    astro::State state;
+    state.r.x = st[0];
+    state.r.y = st[1];
+    state.r.z = st[2];
+    state.v.x = st[3];
+    state.v.y = st[4];
+    state.v.z = st[5];
+    
+    return state;
 }
 }
