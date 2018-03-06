@@ -607,6 +607,9 @@ TEST_F(OrbitTest, OrbitElementsToStateVectorSpice2)
 
 }
 
+
+
+
 TEST_F(OrbitTest, AnomalyConversions)
 {
 
@@ -891,7 +894,166 @@ TEST_F(OrbitTest, Kepler2HypConvergenceTest)
  	}
 }
 
+// The formal test of OE-methods against SPICE before we do benchmarking
+TEST_F(OrbitTest, OrbitElementsToStateVectorComp)
+{
+    // [1], Example 4.3:
+    astro::State   state;
+    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
+    astro::OrbitElements oe1 = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
+
+    // [1], example 4.7: 
+    // Set the orbit elements directly    
+    double rpd = astro::RADPERDEG;
+
+    astro::OrbitElements oe2;
+    oe2.h = 80000; // km²/s
+    oe2.e = 1.4; 
+    oe2.i = 30.0 * rpd;
+    oe2.omega = 40.0 * rpd;
+    oe2.w = 60.0 * rpd;
+    oe2.epoch = et;
+    oe2.mu = mu_earth;
+    oe2.M0 = astro::OrbitElements::meanAnomalyFromTrueAnomaly(30.0*rpd, oe2.e);
+    oe2.computeDerivedQuantities();
+
+
+
+    // Get state 1000s later:
+    EphemerisTime et2(1000.0);
+    astro::State state1 = oe1.toStateVectorOE(et2);
+    astro::State state2 = oe1.toStateVectorSpice(et2);
+    //print(state1);
+    //print(state2);
+    ASSERT_LT(fabs(state2.r.x-state1.r.x), 1.0E-5);
+    ASSERT_LT(fabs(state2.r.y-state1.r.y), 1.0E-5);
+    ASSERT_LT(fabs(state2.r.z-state1.r.z), 1.0E-5);
+    ASSERT_LT(fabs(state2.v.x-state1.v.x), 1.0E-5);
+    ASSERT_LT(fabs(state2.v.y-state1.v.y), 1.0E-5);
+    ASSERT_LT(fabs(state2.v.z-state1.v.z), 1.0E-5);
+
+    astro::State state3 = oe2.toStateVectorOE(et2);
+    astro::State state4 = oe2.toStateVectorSpice(et2);
+    ASSERT_LT(fabs(state3.r.x-state4.r.x), 1.0E-5);
+    ASSERT_LT(fabs(state3.r.y-state4.r.y), 1.0E-5);
+    ASSERT_LT(fabs(state3.r.z-state4.r.z), 1.0E-5);
+    ASSERT_LT(fabs(state3.v.x-state4.v.x), 1.0E-5);
+    ASSERT_LT(fabs(state3.v.y-state4.v.y), 1.0E-5);
+    ASSERT_LT(fabs(state3.v.z-state4.v.z), 1.0E-5);
+}
+
+
+
+// Benchmark testing run on release (-O2), shows that OE is faster
+// [==========] Running 4 tests from 1 test case.
+// [----------] Global test environment set-up.
+// [----------] 4 tests from OrbitTest
+// [ RUN      ] OrbitTest.OrbitElementsToStateVectorBenchmarkEllipticOE
+// [       OK ] OrbitTest.OrbitElementsToStateVectorBenchmarkEllipticOE (546 ms)
+// [ RUN      ] OrbitTest.OrbitElementsToStateVectorBenchmarkEllipticSpice
+// [       OK ] OrbitTest.OrbitElementsToStateVectorBenchmarkEllipticSpice (3751 ms)
+// [ RUN      ] OrbitTest.OrbitElementsToStateVectorBenchmarkHypOE
+// [       OK ] OrbitTest.OrbitElementsToStateVectorBenchmarkHypOE (1195 ms)
+// [ RUN      ] OrbitTest.OrbitElementsToStateVectorBenchmarkHypSpice
+// [       OK ] OrbitTest.OrbitElementsToStateVectorBenchmarkHypSpice (3076 ms)
+// [----------] 4 tests from OrbitTest (8568 ms total)
+//
+// [----------] Global test environment tear-down
+// [==========] 4 tests from 1 test case ran. (8568 ms total)
+// [  PASSED  ] 4 tests.
+
+TEST_F(OrbitTest, OrbitElementsToStateVectorBenchmarkEllipticOE)
+{
+    // [1], Example 4.3:
+    astro::State   state;
+    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+
+    astro::OrbitElements oe1 = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
+
+
+    // Get state 1000s later:
+    EphemerisTime et2(1000.0);
+
+    for(int i = 0; i < 1000000; ++i)
+        astro::State state1 = oe1.toStateVectorOE(et2);
+}
+
+TEST_F(OrbitTest, OrbitElementsToStateVectorBenchmarkEllipticSpice)
+{
+    // [1], Example 4.3:
+    astro::State   state;
+    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+
+    astro::OrbitElements oe1 = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
+
+
+
+    // Get state 1000s later:
+    EphemerisTime et2(1000.0);
+
+    for(int i = 0; i < 1000000; ++i)
+        astro::State state1 = oe1.toStateVectorSpice(et2);
+}
+
+TEST_F(OrbitTest, OrbitElementsToStateVectorBenchmarkHypOE)
+{
+
+
+    // [1], example 4.7: 
+    // Set the orbit elements directly    
+    double rpd = astro::RADPERDEG;
+
+    astro::OrbitElements oe2;
+    oe2.h = 80000; // km²/s
+    oe2.e = 1.4; 
+    oe2.i = 30.0 * rpd;
+    oe2.omega = 40.0 * rpd;
+    oe2.w = 60.0 * rpd;
+    oe2.epoch = et;
+    oe2.mu = mu_earth;
+    oe2.M0 = astro::OrbitElements::meanAnomalyFromTrueAnomaly(30.0*rpd, oe2.e);
+    oe2.computeDerivedQuantities();
+
+
+
+    // Get state 1000s later:
+    EphemerisTime et2(1000.0);
+
+    for(int i = 0; i < 1000000; ++i)
+        astro::State state1 = oe2.toStateVectorOE(et2);
+}
+
+TEST_F(OrbitTest, OrbitElementsToStateVectorBenchmarkHypSpice)
+{
+
+
+    // [1], example 4.7: 
+    // Set the orbit elements directly    
+    double rpd = astro::RADPERDEG;
+
+    astro::OrbitElements oe2;
+    oe2.h = 80000; // km²/s
+    oe2.e = 1.4; 
+    oe2.i = 30.0 * rpd;
+    oe2.omega = 40.0 * rpd;
+    oe2.w = 60.0 * rpd;
+    oe2.epoch = et;
+    oe2.mu = mu_earth;
+    oe2.M0 = astro::OrbitElements::meanAnomalyFromTrueAnomaly(30.0*rpd, oe2.e);
+    oe2.computeDerivedQuantities();
+
+
+
+    // Get state 1000s later:
+    EphemerisTime et2(1000.0);
+
+    for(int i = 0; i < 1000000; ++i)
+        astro::State state1 = oe2.toStateVectorSpice(et2);
+}
 
 
 
