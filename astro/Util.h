@@ -15,7 +15,8 @@ namespace astro
     // Pi function, and a static variable (no need to evaluate pi every time..)
     double  pi();
     const double PI = pi();
-
+    const double TWOPI = 2.0*pi();
+    const double PIHALF = pi()*0.5;
 
 
 	// Degrees / radians conversion
@@ -29,6 +30,10 @@ namespace astro
 
     // convert from a position to Right Ascension, Declination
     void    vecToRaDec(const ork::vec3d& pos, double* range, double* ra, double* dec);
+
+	//Normalizes any number to an arbitrary range 
+    double wrap( const double value, const double start, const double end ); 
+ 
 
 }
 

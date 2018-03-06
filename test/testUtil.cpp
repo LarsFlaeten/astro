@@ -121,3 +121,35 @@ TEST_F(UtilTest, RADECTest)
     ASSERT_LT(fabs(ra - (360.0 - 198.4)), 1.0E-1);
 }
 
+TEST_F(UtilTest, NormalizeTest)
+{
+    double p2 = astro::TWOPI;
+
+    double v = astro::wrap(0.0, 0.0, p2);
+    ASSERT_EQ(v, 0.0);
+    v = astro::wrap(p2-0.0000001, 0.0, p2);
+    ASSERT_LT(fabs(v-p2), 0.000001);
+
+    v = astro::wrap(3.1, 0.0, p2);
+    ASSERT_EQ(v, 3.1);
+    v = astro::wrap(2.7, 0.0, p2);
+    ASSERT_EQ(v, 2.7);
+    v = astro::wrap(1.44444, 0.0, p2);
+    ASSERT_EQ(v, 1.44444);
+    v = astro::wrap(6.11111, 0.0, p2);
+    ASSERT_EQ(v, 6.11111);
+    v = astro::wrap(5.99999, 0.0, p2);
+    ASSERT_EQ(v, 5.99999);
+    
+    
+    v = astro::wrap(45*p2+3, 0.0, p2);
+    ASSERT_EQ(v, 3);
+ 
+    v = astro::wrap(-45*p2+3, 0.0, p2);
+    ASSERT_EQ(v, 3);
+    
+    v = astro::wrap(1000000000*p2+2.9999, 0.0, p2);
+    ASSERT_LT(fabs(v- 2.9999), 1.0E-5);
+ 
+
+}
