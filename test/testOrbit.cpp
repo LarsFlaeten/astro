@@ -500,19 +500,44 @@ TEST_F(OrbitTest, OrbitElementsToStateVectorSpice1)
     oe.mu = mu_earth;
     oe.rp = oe.h*oe.h / oe.mu * (1.0 / (1.0 + oe.e));
     oe.M0 = astro::OrbitElements::meanAnomalyFromTrueAnomaly(oe.theta, oe.e);
-    print(oe);
+    //print(oe);
 
     astro::State state0 = oe.toStateVectorOE();
 	astro::State state1 = oe.toStateVectorSpice(et);
     
-    print(state0);
-    print(state1);
+    //print(state0);
+    //print(state1);
 
-    astro::OrbitElements oe2 = astro::OrbitElements::fromStateVectorOE(state1, et, mu_earth);
-    print(oe2);
+    astro::OrbitElements oe2 = astro::OrbitElements::fromStateVectorOE(state0, et, mu_earth);
+    //print(oe2);
     astro::OrbitElements oe3 = astro::OrbitElements::fromStateVectorSpice(state1, et, mu_earth);
-    print(oe3);
+    //print(oe3);
     //ASSERT_EQ(1,0);
+
+    ASSERT_LT(fabs(oe2.h-oe.h), 1.0E-5);
+    ASSERT_LT(fabs(oe2.i-oe.i), 1.0E-5);
+    ASSERT_LT(fabs(oe2.omega-oe.omega), 1.0E-5);
+    ASSERT_LT(fabs(oe2.w-oe.w), 1.0E-5);
+    ASSERT_LT(fabs(oe2.theta-oe.theta), 1.0E-5);
+    ASSERT_LT(fabs(oe2.e-oe.e), 1.0E-5);
+	ASSERT_LT(fabs(oe2.epoch.getETValue()-oe.epoch.getETValue()), 1.0E-5);
+	ASSERT_LT(fabs(oe2.mu-oe.mu), 1.0E-5);
+	ASSERT_LT(fabs(oe2.rp-oe.rp), 1.0E-5);
+	ASSERT_LT(fabs(oe2.M0-oe.M0), 1.0E-5);
+
+    ASSERT_LT(fabs(oe3.h-oe.h), 1.0E-5);
+    ASSERT_LT(fabs(oe3.i-oe.i), 1.0E-5);
+    ASSERT_LT(fabs(oe3.omega-oe.omega), 1.0E-5);
+    ASSERT_LT(fabs(oe3.w-oe.w), 1.0E-5);
+    ASSERT_LT(fabs(oe3.theta-oe.theta), 1.0E-5);
+    ASSERT_LT(fabs(oe3.e-oe.e), 1.0E-5);
+    ASSERT_LT(fabs(oe3.epoch.getETValue()-oe.epoch.getETValue()), 1.0E-5);
+    ASSERT_LT(fabs(oe3.mu-oe.mu), 1.0E-5);
+    ASSERT_LT(fabs(oe3.rp-oe.rp), 1.0E-5);
+    ASSERT_LT(fabs(oe3.M0-oe.M0), 1.0E-5);
+
+
+
 
 }
 TEST_F(OrbitTest, OrbitElementsToStateVectorSpice2)
@@ -523,14 +548,20 @@ TEST_F(OrbitTest, OrbitElementsToStateVectorSpice2)
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorSpice(state, et, mu_earth);
-	print(oe);
+	//print(oe);
 
 	astro::State state1 = oe.toStateVectorSpice(et);
-	std::cout << "Original" << std::endl;
-	print(state);
-	std::cout << "Recovered" << std::endl;
-    print(state1);
+	//std::cout << "Original" << std::endl;
+	//print(state);
+	//std::cout << "Recovered" << std::endl;
+    //print(state1);
 
+    ASSERT_LT(fabs(state.r.x-state1.r.x), 1.0E-5);
+    ASSERT_LT(fabs(state.r.y-state1.r.y), 1.0E-5);
+    ASSERT_LT(fabs(state.r.z-state1.r.z), 1.0E-5);
+    ASSERT_LT(fabs(state.v.x-state1.v.x), 1.0E-5);
+    ASSERT_LT(fabs(state.v.y-state1.v.y), 1.0E-5);
+    ASSERT_LT(fabs(state.v.z-state1.v.z), 1.0E-5);
 
 
 
