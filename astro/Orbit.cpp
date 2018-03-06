@@ -3,6 +3,7 @@
 #include "SpiceCore.h"
 
 #include <iostream>
+#include <sstream>
 #include <mutex>
 
 #include <cspice/SpiceUsr.h>
@@ -105,31 +106,55 @@ OrbitElements OrbitElements::fromStateVectorOE(const State& state, const Ephemer
     if(E.z < 0.0)
         oe.w = 2.0*astro::PI - oe.w;
 
-    // 13. True anomaly, the sixth orbital element
+    // 13. Mean anomaly from true anomaly, the sixth orbital element
     // theta = acos (E_norm dot R_norm)
     // theta = theta        if v_r >= 0
     // theta = 360 - theta  if v_r <  0
     vec3d R_norm = state.r.normalize();
-    oe.theta = acos(E_norm.dotproduct(R_norm));
+    double theta = acos(E_norm.dotproduct(R_norm));
     if(v_r < 0.0)
-        oe.theta = 2.0*astro::PI - oe.theta;
+        theta = 2.0*astro::PI - theta;
 
     // Mean anomaly
-    oe.M0 = meanAnomalyFromTrueAnomaly(oe.theta, oe.e);
-
-    // Periapsis distance:
-    oe.rp = oe.h*oe.h / mu * (1.0 / (1.0 + oe.e));
+    oe.M0 = meanAnomalyFromTrueAnomaly(theta, oe.e);
 
     /// Assign epoch and mu
     oe.mu = mu;
     oe.epoch = epoch;
-
+    
+    // Compute derived, but constant paramaters:
+    oe.computeDerivedQuantities();
 
     return oe;
+
+}
+
+void OrbitElements::computeDerivedQuantities()
+{
+    // Periapsis distance:
+    rp = h*h / mu * (1.0 / (1.0 + e));
+    
+    // Apoapsis distance:
+    ap = h*h / mu * (1.0 / (1.0 - e));
+
+    // Semimajor axis
+    a = 0.5*(rp + ap);
+
+    // Period (a negative number if e >= 1)
+    if( e < 1.0)
+        T = astro::TWOPI / sqrt(mu)*pow(a, 3.0/2.0);
+    else
+        T = -1.0;
+
+    // Mean motion
+    n = sqrt(mu/pow(fabs(a), 3.0));
 }
 
 double OrbitElements::meanAnomalyFromTrueAnomaly(double trueAnomaly, double e)
 {
+    if( e < 0.0 )
+        throw astro::AstroException("ERROR, negative eccentricity is not allowed");
+	
     if (e < 1.0)
     {
         // Eccentric anomaly:
@@ -148,97 +173,154 @@ double OrbitElements::meanAnomalyFromTrueAnomaly(double trueAnomaly, double e)
     }
 }
 
-#if 0
-OrbitElements OrbitElements::fromstateVectorOEOpt(const State& state, double mu)
+double OrbitElements::trueAnomalyFromMeanAnomaly(double M, double e)
 {
-    // Method is from [1]
-    OrbitElements oe;
+    if( e < 0.0 )
+        throw astro::AstroException("ERROR, negative eccentricity is not allowed");
+	
+	std::pair<double,int> res;
+    res = Kepler2(M, e);
 
-    // 1. Calculate the distance:
-    double r = state.r.length();
+	// calculate true anomaly from eccentric anomaly
+	// https://en.wikipedia.org/wiki/True_anomaly
+    if( e < 0.9998)
+    {
+        double E = res.first;
+	    double cosE2 = cos(0.5*E);
+        double sinE2 = sin(0.5*E);
+	    double theta = 2.0*atan2(sqrt(1.0+e)*sinE2, sqrt(1.0-e)*cosE2);
 
-    // 2. Scalar speed:
-    double v = state.v.length();
-
-    // 3. Radial velocity:
-    // Note that:
-    // - if v_r > 0, the sattelite is flying away from perigee
-    // - if v_r < 0, it is flying towards perigee
-    // v_r = R dot V/r
-    double v_r = state.r.dotproduct(state.v/r);
-
-    // 4. Specific angular momentum: H = R cross V
-    vec3d H = state.r.crossProduct(state.v);
-
-    // 5. Magnitude of angular momentum, the first orbital element:
-    oe.h = H.length();
-
-    // 6. Inclination, the second orbital element
-    // i = acos(h_z / h)
-    // 0 < i < 90 is a prograde orbit
-    // 90 < i < 180 is a retrograde orbit
-    oe.i = acos(H.z / oe.h);
-
-    // 7. Node line:
-    // N = K cross H, K is the Z-unit vector
-    //vec3d N = vec3d::UNIT_Z.crossProduct(H);
-    //vec3d N = vec3d(-H.y, H.x, 0.0);
-
-    // 8. Magnitude of node line:
-    //double n = N.length();
-    double n = sqrt(H.y*H.y + H.x*H.x);
-
-    // 9. RA of the ascending node, the third orbital element
-    //         { acos(N_x / n)          if N_y >= 0
-    // Omega = { 
-    //         { 360 - acos(N_x / n)    if N_y < 0
-    //oe.omega = acos(N.x / n);
-    oe.omega = acos(-H.y / n );
-
-    //if(N.y < 0.0)
-    if(H.x < 0.0)
-        oe.omega = 2.0*astro::PI - oe.omega;
-
-    // 10. Eccentricity vector:
-    vec3d E = state.r*(v*v - mu/r) - state.v*(r*v_r);
-    E *= (1.0 / mu); 
-
-    // 11. Eccentricity, the fourth orbital element:
-    // TODO: Check if eq. 4.11 [1] give improvements in speed. No, we need E for the argument of the perigee below..
-    oe.e = E.length();
-
-    // 12. Argument of perigee, fifth orbital element:
-    //     { acos (N dot E / (n*e) )        if E_z >= 0
-    // w = {
-    //     { 360 - acos (N dot E / (n*e) )  if E_z <  0
-    //vec3d N_norm = N.normalize();
-    //N /= n;
-    //vec3d E_norm = E.normalize();
-    E /= oe.e; // Don't need E in its original form anymore
-    //oe.w = acos(N_norm.dotproduct(E_norm));
-    //oe.w = acos(N.dotproduct(E));
-    oe.w = acos(-H.y*E.x/n + H.x*E.y/n);
-    if(E.z < 0.0)
-        oe.w = 2.0*astro::PI - oe.w;
-
-    // 13. True anomaly, the sixth orbital element
-    // theta = acos (E_norm dot R_norm)
-    // theta = theta        if v_r >= 0
-    // theta = 360 - theta  if v_r <  0
-    vec3d R_norm = state.r.normalize();
-    oe.theta = acos(E.dotproduct(R_norm));
-    if(v_r < 0.0)
-        oe.theta = 2.0*astro::PI - oe.theta;
-
-
-    return oe;
+	    return theta;
+    }
+    else
+    {
+        double H = res.first;
+        double theta = 2.0*atan(sqrt(( e + 1.0 )/(e-1.0))*tanh(0.5*H));
+        return theta;
+    }
 }
-#endif
+    
 
-State   OrbitElements::toStateVectorOE()
+
+std::pair<double,int> OrbitElements::Kepler1(double M, double e)
 {
-    // From [1], Algorithm 4.5:
+    if ( e < 0.0 )
+        throw astro::AstroException("ERROR, negative eccentricity is not allowed");
+	if ( e >= 1.0 )
+		throw astro::AstroException("ERROR, Kepler2 is for e < 1.0");
 
+
+    // Reduce Anomaly to [0..2PI]
+    double Mw = astro::wrap(M, 0.0, astro::TWOPI);
+
+	double E0 = Mw; // First guess
+    double En;
+    int it = 0;
+
+    while(true)
+    {
+        ++it;
+        En = Mw + e*sin(E0);
+        if(fabs(En-E0)<1.0E-10)
+            break;
+        if(it>= KEPLER_MAX_ITERATIONS)
+            throw astro::AstroException("Kepler1 did not converge within max interations");
+        E0 = En;
+    }
+
+    
+
+    return std::make_pair(En,it);
+}
+
+std::pair<double,int> OrbitElements::Kepler2(double M, double e)
+{
+    if ( e < 0.0 )
+        throw astro::AstroException("ERROR, negative eccentricity is not allowed");
+	
+
+    if ( e < 0.9998 )
+	{
+        // Reduce Anomaly to [0..2PI]
+        double Mw = astro::wrap(M, 0.0, astro::TWOPI);
+
+   	    double E0 = Mw; // First guess
+        double En;
+        int it = 0;
+
+       
+        while(true)
+        {
+            ++it;
+        
+            // Many references for this, e.g:
+            // https://www.csun.edu/~hcmth017/master/node16.html
+            En = E0 - (E0 - e*sin(E0) - Mw)/(1.0 - e*cos(E0));
+        
+
+            if(fabs(En-E0)<KEPLER_TOLERANCE)
+                break;
+            if(it>= KEPLER_MAX_ITERATIONS)
+            {
+                std::stringstream oss;
+                oss << "Kepler2 did not converge within max interations(" << astro::KEPLER_MAX_ITERATIONS << "), e=" << e << ", M=" << Mw;
+                
+                throw astro::AstroException(oss.str());
+            }
+            
+            E0 = En;
+        }
+
+        return std::make_pair(En,it);
+    }
+    else if (e > 1.0)
+    {
+        double H0 = M;
+        double Hn;
+        int it = 0; 
+        while(true)
+        {
+            ++it;
+            
+            // http://control.asu.edu/Classes/MAE462/462Lecture05.pdf
+            Hn = H0 + (M - e*sinh(H0) + H0)/(e*cosh(H0) - 1.0);
+            
+
+            if(fabs(Hn-H0)<KEPLER_TOLERANCE)
+                break;
+            if(it>= KEPLER_MAX_ITERATIONS)
+            {
+                std::stringstream oss;
+                oss << "Kepler2 did not converge within max interations(" << astro::KEPLER_MAX_ITERATIONS << "), e=" << e << ", M=" << M;
+                
+                throw astro::AstroException(oss.str());
+            }
+            H0 = Hn;
+        }   
+
+        return std::make_pair(Hn,it);
+ 
+    }
+    else
+     	throw astro::AstroException("ERROR, Kepler2 is for e < 0.9998 or e > 1.0");
+
+
+
+}
+
+State   OrbitElements::toStateVectorOE(const EphemerisTime& et)
+{
+
+    // Get the Mean Anomaly:
+    double t0 = this->epoch.getETValue();
+    double t = et.getETValue();
+    double M = M0 + this->n*(t-t0);
+
+    // True anomaly:
+    double theta = trueAnomalyFromMeanAnomaly(M, this->e);
+
+    // From [1], Algorithm 4.5:
+    
     // Calculate Rxp and Vxp in perifocal frame:
     double costheta = cos(theta);
     double sintheta = sin(theta);
@@ -307,22 +389,16 @@ OrbitElements OrbitElements::fromStateVectorSpice(const State& state, const Ephe
     // angular momentum:
     oe.h = state.r.crossProduct(state.v).length();
 
-    // Mean anomaly 
-    // [1], (4.13b)
-    double r = state.r.length();
-    double v_r  = state.r.dotproduct(state.v) / r;
-    if(oe.e > 1.0E-3)
-        oe.theta = acos( (1.0 / oe.e) * (oe.h*oe.h/(mu*r ) - 1) );
-    else
-        oe.theta = 0.0;
-
-    if(v_r < 0)
-        oe.theta = 2.0*astro::PI - oe.theta;
+    // Mean anomaly at epoch 
     oe.M0 = elts[5];
 
     // Assign epoch and mu
     oe.mu = mu;
     oe.epoch = epoch;
+
+    // Compute derived quantities:
+    oe.computeDerivedQuantities();
+
 
     return oe;
 }
@@ -341,8 +417,8 @@ State   OrbitElements::toStateVectorSpice(const EphemerisTime& et)
     elts[6] = epoch.getETValue();
     elts[7] = mu;
 
-    for(auto i = 0; i < 8; ++i)
-        std::cout << elts[i] << std::endl;
+    //for(auto i = 0; i < 8; ++i)
+    //    std::cout << elts[i] << std::endl;
 
     double st[6];
     {
