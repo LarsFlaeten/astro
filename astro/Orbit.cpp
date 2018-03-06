@@ -22,6 +22,13 @@ using ork::mat4d;
 namespace astro
 {
 
+OrbitElements OrbitElements::fromStateVector(const State& state, const EphemerisTime& epoch, double mu)
+{
+    return OrbitElements::fromStateVectorOE(state, epoch, mu);
+}
+
+
+ 
 OrbitElements OrbitElements::fromStateVectorOE(const State& state, const EphemerisTime& epoch, double mu)
 {
     if(mu < 0)
@@ -306,6 +313,11 @@ std::pair<double,int> OrbitElements::Kepler2(double M, double e)
 
 
 
+}
+
+State   OrbitElements::toStateVector(const EphemerisTime& et)
+{
+    return toStateVectorOE(et);
 }
 
 State   OrbitElements::toStateVectorOE(const EphemerisTime& et)

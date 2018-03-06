@@ -63,6 +63,27 @@ struct OrbitElements
     // Computes the above 5 quantities when all thw others are given
     void computeDerivedQuantities();
 
+
+	// Retrieves the state vector at the given time:
+	// This method uses OE and not Spice, due to speed
+	// (The two are otherwise equivalent)	
+	State	toStateVector(const EphemerisTime& et);    	
+
+    // Convert a state vector to orbit elements for the same frame of reference
+	// at the given epoch
+    // mu is the gravitational parameter of the reference (attracting) body
+    static OrbitElements fromStateVector(
+        const State& state,
+        const EphemerisTime& epoch,
+        double mu);
+
+
+
+	// Below methods are mostly internal
+
+
+
+
     // Convert at state vector to orbit elements for the same frame of reference
     // Using method from [2]
     // mu is the gravitational parameter of the reference (attracting) body
@@ -76,6 +97,8 @@ struct OrbitElements
         const State& state,
         const EphemerisTime& epoch,
         double mu);
+
+
 
 
     // Given eccentricity e and true anomaly, computes the mean anomaly
@@ -97,8 +120,6 @@ struct OrbitElements
     static std::pair<double,int> Kepler2(double M, double e);
     // TODO? Implement even faster solver:
     // https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19720016564.pdf
-
-    	
 
     // Converts the current orbital elements to a state vector in the same
     // frame of reference. Using method from [1] ++
