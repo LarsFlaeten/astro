@@ -73,7 +73,9 @@ TEST_F(OrbitTest, OrbitalElementsFromState)
     ASSERT_LT(fabs(oe.omega * astro::DEGPERRAD - 255.3), 1.0E-1);
     ASSERT_LT(fabs(oe.e - 0.1712), 1.0E-4);
     ASSERT_LT(fabs(oe.w * astro::DEGPERRAD - 20.07), 1.0E-2);
-    ASSERT_LT(fabs(oe.theta * astro::DEGPERRAD - 28.45), 1.0E-2);
+    double theta = astro::OrbitElements::trueAnomalyFromMeanAnomaly(oe.M0, oe.e);
+
+    ASSERT_LT(fabs(theta * astro::DEGPERRAD - 28.45), 1.0E-2);
 
     // Invert the velocti, and see of we get a prograde orbit.
     double incl_old = oe.i * astro::DEGPERRAD;
@@ -106,7 +108,6 @@ TEST_F(OrbitTest, OrbitalElementsFromState2)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
     
@@ -156,10 +157,13 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
-    
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+      
 	// Elliptic orbit, incl = 45:
     r = (6378.0 + 400);
     state.r = vec3d(r, 0.0, 0.0);
@@ -174,10 +178,13 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
-
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
     // hyperbolic orbit, incl = 45:
     r = (6378.0 + 400);
     state.r = vec3d(r, 0.0, 0.0);
@@ -192,10 +199,13 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
-
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
     // hyperbolic orbit 2, anomaly != 0:
     // From [1], Ex. 4.7:
     state.r = vec3d(-4040, 4815, 3629);
@@ -209,15 +219,19 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
-	ASSERT_LT(fabs(oe.h-80000), 30);
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
+
+    ASSERT_LT(fabs(oe.h-80000), 30);
     ASSERT_LT(fabs(oe.i*dpr-30), 0.01);
     ASSERT_LT(fabs(oe.omega*dpr-40), 0.022);
     ASSERT_LT(fabs(oe.e-1.4), 1.0E-2);
     ASSERT_LT(fabs(oe.w*dpr-60), 0.02);
-    ASSERT_LT(fabs(oe.theta*dpr-30), 0.01);
 
 
 
@@ -235,10 +249,13 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
-
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
 	// Equatorial elliptic orbit
 	state.v = vec3d(0, v*1.1, 0);
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
@@ -250,10 +267,13 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
-
+	ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
     // Equatorial hyperbolic orbit
     state.v = vec3d(0, v*1.5, 0);
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
@@ -265,10 +285,13 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
-
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
 
 	// Polar circular orbit
 	state.v = vec3d(0, 0, v);
@@ -281,10 +304,13 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
-
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
 	// Polar elliptic orbit
 	state.v = vec3d(0, 0, v*1.1);
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
@@ -296,10 +322,13 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
-
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
     // Polar hyperbolic orbit
     state.v = vec3d(0, 0, v*1.5);
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
@@ -311,10 +340,13 @@ TEST_F(OrbitTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.omega-oe2.omega), 0.001);
     ASSERT_LT(fabs(oe.e-oe2.e), 1.0E-6);
     ASSERT_LT(fabs(oe.w-oe2.w), 0.0001);
-    ASSERT_LT(fabs(oe.theta-oe2.theta), 0.0001);
     ASSERT_LT(fabs(oe.M0-oe2.M0), 0.0001);
     ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
-
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
 
 
 
@@ -442,12 +474,12 @@ TEST_F(OrbitTest, OrbitElementsToStateVector)
     oe.i = 30.0 * rpd;
     oe.omega = 40.0 * rpd;
     oe.w = 60.0 * rpd;
-    oe.theta = 30 * rpd;
+    oe.M0 = astro::OrbitElements::meanAnomalyFromTrueAnomaly(30 * rpd, oe.e);
     oe.epoch = et;
     oe.mu = mu_earth;
-    oe.rp = oe.h*oe.h / oe.mu * (1.0 / (1.0 + oe.e));
+    oe.computeDerivedQuantities();
 
-    astro::State state = oe.toStateVectorOE();
+    astro::State state = oe.toStateVectorOE(et);
 
 
     astro::OrbitElements oe2 = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
@@ -457,9 +489,13 @@ TEST_F(OrbitTest, OrbitElementsToStateVector)
     ASSERT_LT(fabs(oe2.i-oe.i), 1.0E-5);
     ASSERT_LT(fabs(oe2.omega-oe.omega), 1.0E-5);
     ASSERT_LT(fabs(oe2.w-oe.w), 1.0E-5);
-    ASSERT_LT(fabs(oe2.theta-oe.theta), 1.0E-5);
     ASSERT_LT(fabs(oe2.e-oe.e), 1.0E-5);
-
+    ASSERT_LT(fabs(oe.rp-oe2.rp), 0.0001);
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
 
 }
 
@@ -472,7 +508,7 @@ TEST_F(OrbitTest, OrbitElementsToStateVector2)
 
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
 
-    astro::State state2 = oe.toStateVectorOE();
+    astro::State state2 = oe.toStateVectorOE(et);
     //print(state);
     //print(state2);
 	ASSERT_LT(fabs(state.r.x-state2.r.x), 1.0E-5);
@@ -495,14 +531,14 @@ TEST_F(OrbitTest, OrbitElementsToStateVectorSpice1)
     oe.i = 30.0 * rpd;
     oe.omega = 40.0 * rpd;
     oe.w = 60.0 * rpd;
-    oe.theta = 30 * rpd;
     oe.epoch = et;
     oe.mu = mu_earth;
-    oe.rp = oe.h*oe.h / oe.mu * (1.0 / (1.0 + oe.e));
-    oe.M0 = astro::OrbitElements::meanAnomalyFromTrueAnomaly(oe.theta, oe.e);
+    oe.M0 = astro::OrbitElements::meanAnomalyFromTrueAnomaly(30.0*rpd, oe.e);
+    oe.computeDerivedQuantities();
+
     //print(oe);
 
-    astro::State state0 = oe.toStateVectorOE();
+    astro::State state0 = oe.toStateVectorOE(et);
 	astro::State state1 = oe.toStateVectorSpice(et);
     
     //print(state0);
@@ -518,24 +554,30 @@ TEST_F(OrbitTest, OrbitElementsToStateVectorSpice1)
     ASSERT_LT(fabs(oe2.i-oe.i), 1.0E-5);
     ASSERT_LT(fabs(oe2.omega-oe.omega), 1.0E-5);
     ASSERT_LT(fabs(oe2.w-oe.w), 1.0E-5);
-    ASSERT_LT(fabs(oe2.theta-oe.theta), 1.0E-5);
     ASSERT_LT(fabs(oe2.e-oe.e), 1.0E-5);
 	ASSERT_LT(fabs(oe2.epoch.getETValue()-oe.epoch.getETValue()), 1.0E-5);
 	ASSERT_LT(fabs(oe2.mu-oe.mu), 1.0E-5);
 	ASSERT_LT(fabs(oe2.rp-oe.rp), 1.0E-5);
 	ASSERT_LT(fabs(oe2.M0-oe.M0), 1.0E-5);
-
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
     ASSERT_LT(fabs(oe3.h-oe.h), 1.0E-5);
     ASSERT_LT(fabs(oe3.i-oe.i), 1.0E-5);
     ASSERT_LT(fabs(oe3.omega-oe.omega), 1.0E-5);
     ASSERT_LT(fabs(oe3.w-oe.w), 1.0E-5);
-    ASSERT_LT(fabs(oe3.theta-oe.theta), 1.0E-5);
     ASSERT_LT(fabs(oe3.e-oe.e), 1.0E-5);
     ASSERT_LT(fabs(oe3.epoch.getETValue()-oe.epoch.getETValue()), 1.0E-5);
     ASSERT_LT(fabs(oe3.mu-oe.mu), 1.0E-5);
     ASSERT_LT(fabs(oe3.rp-oe.rp), 1.0E-5);
     ASSERT_LT(fabs(oe3.M0-oe.M0), 1.0E-5);
-
+    ASSERT_LT(fabs(oe.ap-oe2.ap), 0.0001);
+    ASSERT_LT(fabs(oe.a-oe2.a), 0.0001);
+    ASSERT_LT(fabs(oe.T-oe2.T), 0.0001);
+    ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
+ 
 
 
 
@@ -563,8 +605,293 @@ TEST_F(OrbitTest, OrbitElementsToStateVectorSpice2)
     ASSERT_LT(fabs(state.v.y-state1.v.y), 1.0E-5);
     ASSERT_LT(fabs(state.v.z-state1.v.z), 1.0E-5);
 
+}
 
+TEST_F(OrbitTest, AnomalyConversions)
+{
 
+    
+
+	    
+    for(double v = 0.0; v < astro::TWOPI; v+= astro::PIHALF/10.0)
+    {
+        for(double e = 0.0; e < 0.999; e+= 0.1)
+		{
+            double M = astro::OrbitElements::meanAnomalyFromTrueAnomaly(v, e);
+            double v2 = astro::OrbitElements::trueAnomalyFromMeanAnomaly(M, e);
+            ASSERT_LT(fabs(v-v2), astro::KEPLER_TOLERANCE);
+        }
+
+        // Upper level of eccentricity for Kepler2 to be accurate
+        // is around 0.9995 for all theta = [0..2pi]
+        double e = 0.99979;
+        double M = astro::OrbitElements::meanAnomalyFromTrueAnomaly(v, e);
+        double v2 = astro::OrbitElements::trueAnomalyFromMeanAnomaly(M, e);
+        //std::cout << v << ", " << e << std::endl;
+        //std::cout << fabs(v-v2) << ", " << v << std::endl;
+
+        // We allow a little bit higher tolerance on true anomaly
+        // compared to eccentric anomaly, since it is a derived value
+        ASSERT_LT(fabs(v-v2), astro::KEPLER_TOLERANCE*5.0);
+    }
 
 
 }
+
+TEST_F(OrbitTest, KeplerCompTest1)
+{
+    double rpd = astro::RADPERDEG;
+    double M = 30.0*rpd;
+    double e = 0.6;
+    std::pair<double,int> res1 = astro::OrbitElements::Kepler1(M, e);
+    //std::cout << "Kepler1" << std::endl;
+    //std::cout << "  Mean anomaly: " << M << std::endl;
+    //std::cout << "  Eccentricity: " << e << std::endl;
+    //std::cout << "  Ecc. Anomaly: " << res1.first << std::endl;
+    //std::cout << "  Iterations:   " << res1.second << std::endl;
+	// Check on anomaly:
+    double E1 = res1.first;
+    double M12 = E1 - e*sin(E1);
+    ASSERT_LT(fabs(M - M12), astro::KEPLER_TOLERANCE); 
+
+    std::pair<double,int> res2 = astro::OrbitElements::Kepler2(M, e);
+    //std::cout << "Kepler2" << std::endl;
+    //std::cout << "  Mean anomaly: " << M << std::endl;
+    //std::cout << "  Eccentricity: " << e << std::endl;
+    //std::cout << "  Ecc. Anomaly: " << res2.first << std::endl;
+    //std::cout << "  Iterations:   " << res2.second << std::endl;
+	// Check on anomaly:
+    double E2 = res1.first;
+    double M22 = E2 - e*sin(E2);
+    ASSERT_LT(fabs(M - M22), astro::KEPLER_TOLERANCE); 
+
+    // Check the two independent methods
+    ASSERT_LT(fabs(res1.first - res2.first), astro::KEPLER_TOLERANCE); 
+}
+
+// Results from running below with release build (-O2)
+//[ RUN      ] OrbitTest.Kepler1BenchMark
+//[       OK ] OrbitTest.Kepler1BenchMark (1660 ms)
+//[ RUN      ] OrbitTest.Kepler2BenchMark
+//[       OK ] OrbitTest.Kepler2BenchMark (226 ms)
+
+TEST_F(OrbitTest, Kepler1BenchMark)
+{
+    double rpd = astro::RADPERDEG;
+    double M = 30.0*rpd;
+    double e = 0.6;
+
+    for(int i = 0; i < 1000000; i++)
+        std::pair<double,int> res = astro::OrbitElements::Kepler1(M,e);
+
+}
+
+TEST_F(OrbitTest, Kepler2BenchMark)
+{
+    double rpd = astro::RADPERDEG;
+    double M = 30.0*rpd;
+    double e = 0.6;
+
+    for(int i = 0; i < 1000000; i++)
+        std::pair<double,int> res = astro::OrbitElements::Kepler2(M,e);
+
+}
+
+TEST_F(OrbitTest, Kepler2HypBenchMark)
+{
+    double rpd = astro::RADPERDEG;
+    double M = 30.0*rpd;
+    double e = 1.4;
+
+    for(int i = 0; i < 1000000; i++)
+        std::pair<double,int> res = astro::OrbitElements::Kepler2(M,e);
+
+}
+
+
+
+TEST_F(OrbitTest, Kepler2ConvergenceTest)
+{
+    double rpd = astro::RADPERDEG;
+	double M, M2;
+    for(double m = 0.0; m < 360.0; m = m + 10)
+		for(double e = 0.0; e < 1.0; e += 0.1)
+		{	
+
+            if ( e>= 0.9998)
+                e = 0.9997;
+			M = m*rpd;
+        	std::pair<double,int> res = astro::OrbitElements::Kepler2(M,e);
+			
+            // Check on anomaly:
+            double E = res.first;
+            M2 = E - e*sin(E);
+            ASSERT_LT(fabs(M - M2), astro::KEPLER_TOLERANCE); 
+            // Uncomment this line for report on convergence:
+			// std::cout << "it: " << res.second << ", M: " << M << ", e: " << e << ", E: " << res.first << std::endl;
+		}
+}
+
+TEST_F(OrbitTest, Kepler2HypTest1)
+{
+   	double rpd = astro::RADPERDEG;
+    double M = -30.0*rpd;
+    double e = 1.4;
+
+    std::pair<double,int> res;
+	
+    ASSERT_THROW(res = astro::OrbitElements::Kepler1(M, e), astro::AstroException);
+
+    res = astro::OrbitElements::Kepler2(M, e);
+    double H = res.first;
+    double M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+	e = 1.1;
+	res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+    e = 1.05;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+    e = 2.1;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+	e = 3.1;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+    e = 1.4;
+    M = 0.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+    M = -10.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+    M = -20.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+    M = -30.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+    M = -40.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+    M = -50.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+    M = -60.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+    M = -70.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+    M = -80.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+    M = -90.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+    e = 1.05;
+    M = -90.0*rpd;
+    res = astro::OrbitElements::Kepler2(M, e);
+    H = res.first;
+    M2 = e*sinh(H)-H;
+	//std::cout << "M: " << M << ", M2: " << M2 << ", e: " << e << ", H: " << res.first << ", it: " << res.second << std::endl;
+    ASSERT_LT(fabs(M-M2), astro::KEPLER_TOLERANCE);
+
+
+
+
+ 
+}
+
+TEST_F(OrbitTest, Kepler2HypConvergenceTest)
+{
+    double rpd = astro::RADPERDEG;
+	double M, M2;
+    for(double m = -90; m < 90.0; m = m + 10)
+		for(double e = 1.05; e < 3.0; e += 0.1)
+		{	
+
+			M = m*rpd;
+        	std::pair<double,int> res = astro::OrbitElements::Kepler2(M,e);
+			
+            // Check on anomaly:
+            double H = res.first;
+            M2 = e*sinh(H)-H;
+            // Uncomment this line for report on convergence:
+			// std::cout << "it: " << res.second << ", M: " << M << ", Mcheck: " << M2 << ", e: " << e << ", H: " << res.first << std::endl;
+	        ASSERT_LT(fabs(M - M2), astro::KEPLER_TOLERANCE); 
+ 	}
+}
+
+
+
+
+
