@@ -1056,4 +1056,151 @@ TEST_F(OrbitTest, OrbitElementsToStateVectorBenchmarkHypSpice)
 }
 
 
+TEST_F(OrbitTest, OrbitPropagationTest1)
+{
+    // [1], Example 4.3:
+    astro::State   state;
+    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+
+    astro::OrbitElements oe1 = astro::OrbitElements::fromStateVector(state, et, mu_earth);
+
+
+    // Get state one period later, should give same state
+    double T = oe1.T;
+
+    EphemerisTime et2(T);
+
+    astro::State state1 = oe1.toStateVector(et2);
+    ASSERT_LT(fabs(state.r.x-state1.r.x), 1.0E-5);
+    ASSERT_LT(fabs(state.r.y-state1.r.y), 1.0E-5);
+    ASSERT_LT(fabs(state.r.z-state1.r.z), 1.0E-5);
+    ASSERT_LT(fabs(state.v.x-state1.v.x), 1.0E-5);
+    ASSERT_LT(fabs(state.v.y-state1.v.y), 1.0E-5);
+    ASSERT_LT(fabs(state.v.z-state1.v.z), 1.0E-5);
+
+    // Get state 150 periods later, should give same state
+    EphemerisTime et4(150*T);
+    state1 = oe1.toStateVector(et4);
+    ASSERT_LT(fabs(state.r.x-state1.r.x), 1.0E-5);
+    ASSERT_LT(fabs(state.r.y-state1.r.y), 1.0E-5);
+    ASSERT_LT(fabs(state.r.z-state1.r.z), 1.0E-5);
+    ASSERT_LT(fabs(state.v.x-state1.v.x), 1.0E-5);
+    ASSERT_LT(fabs(state.v.y-state1.v.y), 1.0E-5);
+    ASSERT_LT(fabs(state.v.z-state1.v.z), 1.0E-5);
+
+    // Get state 40 periods before, should give same state
+    EphemerisTime et5(-40*T);
+    state1 = oe1.toStateVector(et5);
+    ASSERT_LT(fabs(state.r.x-state1.r.x), 1.0E-5);
+    ASSERT_LT(fabs(state.r.y-state1.r.y), 1.0E-5);
+    ASSERT_LT(fabs(state.r.z-state1.r.z), 1.0E-5);
+    ASSERT_LT(fabs(state.v.x-state1.v.x), 1.0E-5);
+    ASSERT_LT(fabs(state.v.y-state1.v.y), 1.0E-5);
+    ASSERT_LT(fabs(state.v.z-state1.v.z), 1.0E-5);
+
+    //print(oe1);
+
+    // Get the time to periapsis and apoapsis:
+    double k = oe1.T/astro::TWOPI;
+    double e = oe1.e;
+
+    double E_now = astro::OrbitElements::eccentricAnomalyFromMeanAnomaly(oe1.M0, oe1.e);
+    double E_pe = 0.0;
+    double E_ap = astro::PI;
+    
+    double t_now = k*(E_now - e*sin(E_now));
+    double t_pe = k*(E_pe - e*sin(E_pe))-t_now;
+    double t_ap = k*(E_ap - e*sin(E_ap))-t_now;
+    
+    t_pe = t_pe < t_now ? t_pe+T : t_pe;
+    t_ap = t_ap < t_now ? t_ap+T : t_ap;
+
+
+
+    //std::cout << "Period:      " << oe1.T << std::endl;
+    //std::cout << "Time now:    " << et.getETValue() << std::endl;
+
+    //std::cout << "Time to PE:  " << t_pe << std::endl;
+    //std::cout << "Time to AP:  " << t_ap << std::endl;
+
+    // Propagate the orbit to PE:
+    EphemerisTime et_pe(t_pe);
+    state1 = oe1.toStateVector(et_pe);
+    double r_pe = state1.r.length();
+    //std::cout << "Radius @ PE: " << r_pe << std::endl;
+    ASSERT_LT(fabs(r_pe - oe1.rp), 1.0E-5);
+
+    // Propagate the orbit to AP:
+    EphemerisTime et_ap(t_ap);
+    state1 = oe1.toStateVector(et_ap);
+    double r_ap = state1.r.length();
+    //std::cout << "Radius @ AP: " << r_ap << std::endl;
+    ASSERT_LT(fabs(r_ap - oe1.ap), 1.0E-5);
+
+    // Further tests om some propagations:
+
+    // [1], example 3.5
+    double rpd = astro::RADPERDEG;
+
+   
+    double v_pe = 15.0; // [km/s]
+    r_pe = 300.0 + 6378.0;
+    EphemerisTime et35(0.0);
+    OrbitElements oe35;
+    oe35.h = v_pe*r_pe;
+    oe35.e = oe35.h*oe35.h/(mu_earth*r_pe)-1.0; // e = 2.7696
+    oe35.i = 0.0;
+    oe35.omega = 0.0;
+    oe35.w = 0.0;
+    oe35.M0 = 0.0;
+    oe35.epoch = et35;
+    oe35.mu = mu_earth;
+    oe35.computeDerivedQuantities();
+    //print(oe35);
+
+    // Find radius and time when true anomaly is 100 degrees
+    double v = 100*rpd;
+    double Mh = astro::OrbitElements::meanAnomalyFromTrueAnomaly(v, oe35.e);
+    
+    double t100 = Mh/oe35.n;   
+    ASSERT_LT(fabs(t100-4141), 1.0); // Time at v = 100 deg = 4141s
+
+    State state35 = oe35.toStateVector(EphemerisTime(4141));
+    double r100 = state35.r.length();
+    //std::cout << r100 << std::endl;
+    ASSERT_LT(fabs(r100-48497), 6); // Radius at 4141s = 48497 km
+    // Note by going throug mean anomaly here, we get some rounding error
+    // true anomaly (99.9989 vs 100). Together with rounding in ex3.5 on e
+    // his will give a few kms off...
+
+    // Find posiiton and speed 3 hours later
+    double t3h = 4141 + 3*3600;
+    state35 = oe35.toStateVector(EphemerisTime(t3h));
+    ASSERT_LT(fabs(state35.r.length()-163180), 6); // Radius 3h later is 163180km
+    ASSERT_LT(fabs(state35.v.length()-10.51), 1.0E-2); // velocity 3h later is 10.51km/s
+
+    // [1], example 3.1
+    EphemerisTime et31(0.0);
+    OrbitElements oe31;
+    oe31.h = 72472;
+    oe31.e = 0.37255;
+    oe31.i = 0.0;
+    oe31.omega = 0.0;
+    oe31.w = 0.0;
+    oe31.M0 = 0.0;
+    oe31.epoch = et35;
+    oe31.mu = mu_earth;
+    oe31.computeDerivedQuantities();
+	print(oe31);
+
+	// Calculate time to fly from PE to a true anomaly of 120 degrees:
+	double M = astro::OrbitElements::meanAnomalyFromTrueAnomaly(120*rpd, oe31.e);
+	double t31 = oe31.T*M/astro::TWOPI;
+	 
+	ASSERT_LT(fabs(t31-4077), 1.0E02);
+	
+	
+}
+
 
