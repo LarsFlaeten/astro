@@ -1,5 +1,5 @@
-#ifndef _ASTRO_STATE_H_H
-#define _ASTRO_STATE_H_H
+#ifndef _ASTRO_STATE_H_
+#define _ASTRO_STATE_H_
 
 #include <sstream>
 #include <iostream>
@@ -26,20 +26,9 @@ struct State {
 
 
 
-template < class T >
-std::ostream& operator << (std::ostream& os, const astro::State& s)
-{
-    os << "R: (" << s.r.x <<", " << s.r.y << ", " << s.r.z << ") [km]\n";
-    os << "V: (" << s.v.x <<", " << s.v.y << ", " << s.v.z << ") [km/s]\n";
-    return os;
-}   
+std::ostream& operator << (std::ostream& os, const astro::State& s);
 
-void print(const astro::State& s)
-{
-    std::cout << "R: (" << s.r.x <<", " << s.r.y << ", " << s.r.z << ") [km]\n";
-    std::cout << "V: (" << s.v.x <<", " << s.v.y << ", " << s.v.z << ") [km/s]\n";
-    std::cout << std::endl;
-}
+void print(const astro::State& s);
 
 }
 #endif
