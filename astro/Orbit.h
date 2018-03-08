@@ -99,7 +99,12 @@ struct OrbitElements
         double mu);
 
 
+    // Given eccentricity e and true anomaly, computes the eccentric anomaly
+    static double eccentricAnomalyFromTrueAnomaly(double trueAnomaly, double e);    
 
+    // Given eccentricity e and mean anomaly, computes the eccentric anomaly
+    static double eccentricAnomalyFromMeanAnomaly(double meanAnomaly, double e);
+ 
 
     // Given eccentricity e and true anomaly, computes the mean anomaly
     static double meanAnomalyFromTrueAnomaly(double trueAnomaly, double e);    
@@ -165,7 +170,6 @@ void print(const astro::OrbitElements& oe)
     std::cout << "Eccentricity:        " << oe.e   << " [-]\n";
     std::cout << "Argument of perigee: " << oe.w*dpr   << " [Deg]\n";
     std::cout << "Mean anomaly @epoch: " << oe.M0*dpr  << " [Deg]\n";
-    std::cout << "Periapsis distance:  " << oe.rp      << " [km]\n";
     std::cout << "Epoch:               " << oe.epoch.getETValue() << " [seconds]\n";
     std::cout << "mu:                  " << oe.mu << " [km³/s²]\n";
     std::cout << "Periapsis distance:  " << oe.rp      << " [km]\n"; 

@@ -157,6 +157,25 @@ void OrbitElements::computeDerivedQuantities()
     n = sqrt(mu/pow(fabs(a), 3.0));
 }
 
+double OrbitElements::eccentricAnomalyFromTrueAnomaly(double trueAnomaly, double e)
+{
+    if( e < 0.0 )
+        throw astro::AstroException("ERROR, negative eccentricity is not allowed");
+	
+    if (e < 1.0)
+    {
+        // Eccentric anomaly:
+        return 2.0*atan( tan(trueAnomaly / 2.0) / sqrt( (1 + e) / (1 - e) ) );
+
+    } else
+    {
+        // http://control.asu.edu/Classes/MAE462/462Lecture05.pdf
+        // Hyperbolic anomaly:
+        return 2.0*atanh( (sqrt( (e-1) / (e + 1)  ) ) * tan(trueAnomaly/2.0) );
+
+    }
+}
+
 double OrbitElements::meanAnomalyFromTrueAnomaly(double trueAnomaly, double e)
 {
     if( e < 0.0 )
@@ -165,7 +184,7 @@ double OrbitElements::meanAnomalyFromTrueAnomaly(double trueAnomaly, double e)
     if (e < 1.0)
     {
         // Eccentric anomaly:
-        double E = 2.0*atan( tan(trueAnomaly / 2.0) / sqrt( (1 + e) / (1 - e) ) );
+        double E = eccentricAnomalyFromTrueAnomaly(trueAnomaly, e);
 
         // Mean anomaly:
         return E - e*sin(E);
@@ -173,14 +192,14 @@ double OrbitElements::meanAnomalyFromTrueAnomaly(double trueAnomaly, double e)
     {
         // http://control.asu.edu/Classes/MAE462/462Lecture05.pdf
         // Hyperbolic anomaly:
-        double H = 2.0*atanh( (sqrt( (e-1) / (e + 1)  ) ) * tan(trueAnomaly/2.0) );
+        double H = eccentricAnomalyFromTrueAnomaly(trueAnomaly, e);
     
         return e*sinh(H) - H;
 
     }
 }
 
-double OrbitElements::trueAnomalyFromMeanAnomaly(double M, double e)
+double OrbitElements::eccentricAnomalyFromMeanAnomaly(double M, double e)
 {
     if( e < 0.0 )
         throw astro::AstroException("ERROR, negative eccentricity is not allowed");
@@ -188,11 +207,19 @@ double OrbitElements::trueAnomalyFromMeanAnomaly(double M, double e)
 	std::pair<double,int> res;
     res = Kepler2(M, e);
 
+    return res.first;
+}
+
+double OrbitElements::trueAnomalyFromMeanAnomaly(double M, double e)
+{
+    if( e < 0.0 )
+        throw astro::AstroException("ERROR, negative eccentricity is not allowed");
+	
 	// calculate true anomaly from eccentric anomaly
 	// https://en.wikipedia.org/wiki/True_anomaly
     if( e < 0.9998)
     {
-        double E = res.first;
+        double E = eccentricAnomalyFromMeanAnomaly(M,e);
 	    double cosE2 = cos(0.5*E);
         double sinE2 = sin(0.5*E);
 	    double theta = 2.0*atan2(sqrt(1.0+e)*sinE2, sqrt(1.0-e)*cosE2);
@@ -201,7 +228,7 @@ double OrbitElements::trueAnomalyFromMeanAnomaly(double M, double e)
     }
     else
     {
-        double H = res.first;
+        double H = eccentricAnomalyFromMeanAnomaly(M,e);
         double theta = 2.0*atan(sqrt(( e + 1.0 )/(e-1.0))*tanh(0.5*H));
         return theta;
     }
@@ -330,14 +357,13 @@ State   OrbitElements::toStateVectorOE(const EphemerisTime& et)
 
     // True anomaly:
     double theta = trueAnomalyFromMeanAnomaly(M, this->e);
-
     // From [1], Algorithm 4.5:
     
     // Calculate Rxp and Vxp in perifocal frame:
     double costheta = cos(theta);
     double sintheta = sin(theta);
     vec3d Rxp(costheta, sintheta, 0.0);
-    Rxp *= (h * h)/mu * (1 / ( 1 + e*costheta ));
+    Rxp *= (h * h)/mu * (1.0 / ( 1.0 + e*costheta ));
     //std::cout << "RXP: [" << Rxp.x << ", " << Rxp.y << ", " << Rxp.z << "]" << std::endl;
 
 
