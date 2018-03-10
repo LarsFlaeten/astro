@@ -82,6 +82,27 @@ TEST_F(TimeTest, ETInitializationTest)
 	
 }
 
+TEST_F(TimeTest, EqualityTest)
+{
+    ASSERT_EQ(astro::EphemerisTime(0.0)==astro::EphemerisTime(0.0), true);
+    ASSERT_EQ(astro::EphemerisTime(0.0)==astro::EphemerisTime(1.0), false);
+    ASSERT_EQ(astro::EphemerisTime(1.0)==astro::EphemerisTime(1.0), true);
+    ASSERT_EQ(
+        astro::EphemerisTime::fromString("29 Jun '30 12:29:29.298")==
+        astro::EphemerisTime::fromString("29 Jun '30 12:29:29.298"),
+        true);
+    ASSERT_EQ(
+        astro::EphemerisTime::fromString("29 Jun '30 12:29:29.298")==
+        astro::EphemerisTime(0.0),
+        false);
+
+
+
+
+
+}
+
+
 TEST_F(TimeTest, ET2UTCTest)
 {
 
@@ -137,3 +158,27 @@ TEST_F(TimeTest, JDConversions)
 
 
 }
+
+TEST_F(TimeTest, TimeDeltaTest)
+{
+    astro::EphemerisTime et0(0);
+    et0 += astro::TimeDelta(377.67876);
+    ASSERT_EQ(et0.getETValue(),  377.67876);
+    et0 -= astro::TimeDelta(377.67876);
+    ASSERT_EQ(et0.getETValue(),  0.0);
+
+    astro::EphemerisTime et1(9836474635);
+    et1 += astro::TimeDelta(746.63546);
+    ASSERT_EQ(et1.getETValue(), 9836475381.63546);
+    et1 -= astro::TimeDelta(746.63546);
+    ASSERT_EQ(et1.getETValue(),  9836474635);
+
+
+ 
+
+ 
+
+
+}
+
+

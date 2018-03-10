@@ -6,6 +6,16 @@
 namespace astro
 {
 
+struct TimeDelta
+{
+    TimeDelta(double dt)
+       : value(dt)
+    {
+
+    }
+
+    double value;
+};
 
 class EphemerisTime
 {
@@ -40,6 +50,22 @@ public:
     // Returns the julian day (based on TDB/ET or UTC) equivalent of this et:
     double      toJED() const;
     double      toJDUTC() const;
+
+    bool operator==(const EphemerisTime& other)
+    {
+        return et == other.et ? true : false;
+    }
+
+    void operator+=(const TimeDelta dt)
+    {
+        et += dt.value;
+    }
+    void operator-=(const TimeDelta dt)
+    {
+        et -= dt.value;
+    }
+
+
 private:
     // The ephemeris time
     double et;
