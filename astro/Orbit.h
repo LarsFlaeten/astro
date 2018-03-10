@@ -19,7 +19,7 @@ namespace astro
 class Orbit
 {
 public:
-    Orbit(const OrbitElements& oe);
+    Orbit();
     virtual ~Orbit();
 
     // The essential method of all orbits in astro:
@@ -27,11 +27,37 @@ public:
 
     // We need more stuff here, such as get frame etc...
 
-protected:
-    Orbit();
 
 };
 
+class SimpleOrbit : public Orbit
+{
+public:
+    SimpleOrbit(const OrbitElements& oe);
+    virtual ~ SimpleOrbit();
+
+    virtual State getState(const EphemerisTime& et);
+
+    // returns the period of the orbit. If this is not a periodic orbit
+    // (parabolic, hyperbolic) the return value is negative
+    // Return value: Period [seconds]
+    // TODO: Evaluate to move this up to Base class
+    // TODO: Evaluate to throw exception for non-repeating/open orbits
+    double  getPeriod() const;
+
+    // Returns true if this is an elliptic or circular orbit, false otherwise
+    bool    isPeriodic() const; 
+
+    // Returns a reference to te underøying orbital elements of this Orbit
+    const OrbitElements& getOrbitElements() const;
+
+protected:
+    SimpleOrbit();
+
+
+    OrbitElements oe;
+
+};
 
 }
 
