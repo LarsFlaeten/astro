@@ -1,4 +1,4 @@
-# astro - An astrodynamics tollbox
+# astro - An astrodynamics toolbox
 
 WORK IN PROGRESS!
 
@@ -116,8 +116,37 @@ Period:              8198.86 [s]
 Mean motion:         0.000766349 [rad/s]
 ```
 
+## Example 3 - Orbit positions as a function of time:
 
+This example shows how to establish a keplerian orbit from a state vector, and how to retrieve orbit positions as a function of time.
+```
+astro::State   state;
+state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
+state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
+astro::EphemerisTime et(0); // et = 0 represents the J2000 epoch
+double mu_earth = 398600.0;
+
+// Convert to Keplerian orbital elements for this epoch
+astro::OrbitElements oe = astro::OrbitElements::fromStateVector(state, et, mu_earth);
+
+// Generate a simple orbit from these elements:
+astro::SimpleOrbit orbit1(oe);
+
+astro::TimeDelta dt(orbit1.getPeriod()/40.0);
+
+for(int i = 0; i <= 40; ++i)
+{
+    // Get the state and print selected elements (position)
+    auto state = orbit1.getState(et);
+    std::cout << et.getETValue() << "\t" << state.r.x << "\t" << state.r.y << "\t" << state.r.z << std::endl;
+
+    // Advance EphemerisTime with 1/40th period:
+    et += dt;
+
+}
+```
+The orbit is shown in the follofing plot:
 
 ![alt text](https://raw.githubusercontent.com/LarsFlaeten/astro/master/web/example3.png "Orbit from example 3 plotted aronud primary (Earth)")
 
