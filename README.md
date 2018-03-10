@@ -32,7 +32,7 @@ Output:
 Date/Time in ISO: 2000-01-01T11:58:56, in Julian Day(UTC): JD 2451544.99926
 ```
 
-Initialization from UTC strings:
+Initialization from UTC string:
 
 ```
 et1 = astro::EphemerisTime::fromString("2018 February 22, 20:04:00 UTC");
@@ -43,6 +43,9 @@ Output:
 Date/Time in ISO: 2018-02-22T20:04:00, in Julian Day(UTC): JD 2458172.33611
 ```
 
+Initialization from ISO string:
+
+
 ```
 et1 = astro::EphemerisTime::fromString("2017-12-24T17:00:00.12"); // ISO format
 std::cout << "Date/Time in ISO: " << et1.toISOUTCString() << ", in Julian Day(UTC): " << et1.toJDUTCString() << std::endl;
@@ -51,6 +54,9 @@ Output:
 ```
 Date/Time in ISO: 2017-12-24T17:00:00, in Julian Day(UTC): JD 2458112.20833
 ```
+
+Initialization from string with Julian Day:
+
 
 ```
 et1 = astro::EphemerisTime::fromString("2451515.2981 JD"); // From Julian date
