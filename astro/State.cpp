@@ -1,17 +1,23 @@
 #include "State.h"
 
+namespace astro
+{
+
 std::ostream& operator << (std::ostream& os, const astro::State& s)
 {
-    os << "R: (" << s.r.x <<", " << s.r.y << ", " << s.r.z << ") [km]\n";
-    os << "V: (" << s.v.x <<", " << s.v.y << ", " << s.v.z << ") [km/s]\n";
+    os << "r: (" << s.r.x <<", " << s.r.y << ", " << s.r.z << ") [km]\n";
+    os << "v: (" << s.v.x <<", " << s.v.y << ", " << s.v.z << ") [km/s]\n";
     return os;
 }   
 
-void print(const astro::State& s)
+std::ostream& operator << (std::ostream& os, const astro::StateDot& s)
 {
-    std::cout << "R: (" << s.r.x <<", " << s.r.y << ", " << s.r.z << ") [km]\n";
-    std::cout << "V: (" << s.v.x <<", " << s.v.y << ", " << s.v.z << ") [km/s]\n";
-    std::cout << std::endl;
+    os << "v: (" << s.v.x <<", " << s.v.y << ", " << s.v.z << ") [km/s]\n";
+    os << "a: (" << s.a.x <<", " << s.a.y << ", " << s.a.z << ") [km²/s]\n";
+    return os;
+}   
+
+
+
+
 }
-
-
