@@ -1,11 +1,6 @@
-set(EXENAME example)
-message(STATUS " ***** EXAMPLE ***** ")
 # Sources
 include_directories("${PROJECT_SOURCE_DIR}")
-file(GLOB SOURCE_FILES *.cpp)
 
-# Add defines for exe build
-# add_definitions("-DXXX=")
 
 message(STATUS "PROJECT_SOURCE_DIR: " ${PROJECT_SOURCE_DIR})
 
@@ -19,9 +14,10 @@ message(STATUS "Using CXX flags: " ${CMAKE_CXX_FLAGS})
 
 
 
-add_executable(${EXENAME} ${SOURCE_FILES})
+add_executable(example example.cpp)
+target_link_libraries(example astro)
 
-message(STATUS "INTERFACE_LINK_LIBRARIES: " ${INTERFACE_LINK_LIBRARIES} )
-message(STATUS "LINK_INTERFACE_LIBRARIES: " ${LINK_INTERFACE_LIBRARIES} )
-target_link_libraries(${EXENAME} astro)
 
+
+add_executable(propagate propagate.cpp)
+target_link_libraries(propagate astro)
