@@ -14,6 +14,11 @@ struct TimeDelta
 
     }
 
+    TimeDelta()
+        :value(0.0)
+    {
+
+    }
     double value;
 };
 
@@ -51,21 +56,38 @@ public:
     double      toJED() const;
     double      toJDUTC() const;
 
-    bool operator==(const EphemerisTime& other)
+    bool operator==(const EphemerisTime& other) const
     {
         return et == other.et ? true : false;
     }
 
-    void operator+=(const TimeDelta dt)
+    void operator+=(const TimeDelta& dt)
     {
         et += dt.value;
     }
-    void operator-=(const TimeDelta dt)
+    void operator-=(const TimeDelta& dt)
     {
         et -= dt.value;
     }
 
+    EphemerisTime operator+(const TimeDelta& dt) const
+    {
+        return EphemerisTime(et + dt.value);
+    }
 
+    TimeDelta operator-(const EphemerisTime& other) const
+    {
+        return TimeDelta(et - other.getETValue());
+    }
+
+    bool operator>(const EphemerisTime& other) const
+    {
+        return et>other.et ? true : false;
+    }
+    bool operator<(const EphemerisTime& other) const
+    {
+        return et<other.et ? true : false;
+    }
 private:
     // The ephemeris time
     double et;

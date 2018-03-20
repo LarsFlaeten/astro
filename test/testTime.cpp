@@ -102,6 +102,34 @@ TEST_F(TimeTest, EqualityTest)
 
 }
 
+TEST_F(TimeTest, Operatorstest)
+{
+    astro::EphemerisTime et0(0.0);
+    astro::EphemerisTime et1(1.0);
+    astro::TimeDelta dt(1.0);
+
+    ASSERT_EQ(et1 > et0, true);
+    ASSERT_EQ(et1 < et0, false);
+    ASSERT_EQ(et0 > et1, false);
+    ASSERT_EQ(et0 < et1, true);
+
+
+    ASSERT_EQ(et1==et0, false);
+    
+    astro::EphemerisTime etn = et0 + dt;
+    ASSERT_EQ(etn, et1);
+
+    et0 += dt;
+    ASSERT_EQ(et0, et1);
+
+
+    ASSERT_EQ(et0==et1, true);
+    
+    et0 -= dt;
+    ASSERT_EQ((et1 - et0).value, dt.value);
+
+}
+
 
 TEST_F(TimeTest, ET2UTCTest)
 {
