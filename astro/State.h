@@ -71,17 +71,9 @@ State operator/( const State &p1 , const State &p2 );
 State abs( const State &p );
 
 
-// The derivative of a state vector
-struct StateDot {
-    vec3d   v; // Orbital velocity [km/s]
-    vec3d   a; // Acceleration [km²/s]
-
-};
-
 
 std::ostream& operator << (std::ostream& os, const astro::State& s);
 
-std::ostream& operator << (std::ostream& os, const astro::StateDot& dsdt);
 
 
 }

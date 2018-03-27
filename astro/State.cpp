@@ -10,12 +10,6 @@ std::ostream& operator << (std::ostream& os, const astro::State& s)
     return os;
 }   
 
-std::ostream& operator << (std::ostream& os, const astro::StateDot& s)
-{
-    os << "v: (" << s.v.x <<", " << s.v.y << ", " << s.v.z << ") [km/s]\n";
-    os << "a: (" << s.a.x <<", " << s.a.y << ", " << s.a.z << ") [km²/s]\n";
-    return os;
-}   
 
 State operator/(const State& p1, const State& p2)
 {
