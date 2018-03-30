@@ -12,7 +12,7 @@
 
 namespace astro
 {
-    // Pi function, and a static variable (no need to evaluate pi every time..)
+    // Pi function, and a few static variables (no need to evaluate pi every time..)
     double  pi();
     const double PI = pi();
     const double TWOPI = 2.0*pi();
@@ -34,7 +34,6 @@ namespace astro
 	//Normalizes any number to an arbitrary range 
     double wrap( const double value, const double start, const double end ); 
  
-
 }
 
 
