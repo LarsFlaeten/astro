@@ -12,9 +12,6 @@
 #include <astro/ODE.h>
 #include <astro/Propagator.h>
 
-#include <boost/numeric/odeint.hpp>
-
-using namespace boost::numeric::odeint;
 
 int main(int argc, char **argv)
 {
@@ -127,7 +124,7 @@ int main(int argc, char **argv)
     if(method.compare("RKF45")==0)
     {
         astro::Propagator<astro::RKF45, astro::RKF45::Result> pr(ode);
-        astro::RKF45::setTolerance(tolerance);
+        //astro::RKF45::setTolerance(tolerance);       
 
         auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
 
@@ -142,15 +139,9 @@ int main(int argc, char **argv)
     }
     else if(method.compare("RKF78")==0)
     {
-        
 
-
-    }     
-#if 0
-    else if(method.compare("RKF78")==0)
-    {
         astro::Propagator<astro::RKF78, astro::RKF78::Result> pr(ode);
-        astro::RKF78::setTolerance(tolerance);
+        //astro::RKF78::setTolerance(tolerance);
 
         auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
 
@@ -162,8 +153,8 @@ int main(int argc, char **argv)
                 std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << res.et.getETValue() << "\t" << res.dt_next.value << "\t" <<
                 res.s.r.x << "\t" << res.s.r.y << "\t" << res.s.r.z << "\t" <<
                 res.s.v.x << "\t" << res.s.v.y << "\t" << res.s.v.z << std::endl;
-    } 
-#endif
+
+   }     
     else if(method.compare("RK1")==0)
     {
         astro::Propagator<astro::RK<1>, astro::RK<1>::Result> pr(ode);
@@ -224,6 +215,7 @@ int main(int argc, char **argv)
                 res.s.r.x << "\t" << res.s.r.y << "\t" << res.s.r.z << "\t" <<
                 res.s.v.x << "\t" << res.s.v.y << "\t" << res.s.v.z << std::endl;
     } 
+    // Test of ODEints implementation.
     else if(method.compare("RK4O")==0)
     {
         runge_kutta4< astro::State, double, astro::State, double, vector_space_algebra > rk4;
