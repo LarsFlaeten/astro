@@ -53,7 +53,7 @@ SimpleOrbit::SimpleOrbit(const OrbitElements& orbitElements)
     oe.computeDerivedQuantities();
 }
 
-State SimpleOrbit::getState(const EphemerisTime& et)
+PosState SimpleOrbit::getState(const EphemerisTime& et)
 {
     return oe.toStateVector(et);
 }

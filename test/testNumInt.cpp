@@ -27,7 +27,7 @@ protected:
     // before the destructor).
     virtual void TearDown();
 
-    astro::State    state0;
+    astro::PosState    state0;
     astro::OrbitElements oe0;
     astro::EphemerisTime et0;
     double mu_earth;
@@ -100,7 +100,7 @@ TEST_F(NumIntTest, RKF45BenchMarkTest)
 
 TEST_F(NumIntTest, RKF78HypAsymptote)
 {
-    astro::State s;
+    astro::PosState s;
     s.r = vec3d(6378 + 400, 0.0, 0.0);
     //double v = 7.66895; // Circular
     double v = 10.84509; // roughly eccentric (to six decimals on e)
@@ -122,7 +122,7 @@ TEST_F(NumIntTest, RKF78HypAsymptote)
     //for(auto res : resv)
     //    std::cout << res.dt_next.value << "\t" << res.s.r.length() << "\t" << res.s.v.length() << std::endl;
 
-    astro::State s_inf = resv.back().s;
+    astro::PosState s_inf = resv.back().s;
 
     double v_inf = s_inf.v.length();
     ASSERT_LT(fabs(v_inf- astro::hyperbolicExcessVelocity(mu_earth, oe.a)), 0.016);

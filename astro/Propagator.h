@@ -12,7 +12,7 @@ namespace astro
 
 struct SimpleResult
 {
-    State s;
+    PosState s;
     TimeDelta dt_next;
 };
 
@@ -29,14 +29,14 @@ public:
     // State s - State to be integrated
     // et - time at which the state is given
     // dt - stepsize, is often given by a previous integration result 
-    Result doStep(const State& s, const EphemerisTime& et, const TimeDelta& dt);
+    Result doStep(const PosState& s, const EphemerisTime& et, const TimeDelta& dt);
 
     // Perform a step sequence from et0 to et1:
     // State s - State to be integrated
     // et0 - time at which the initial state is given
     // et1 - time at the end of integration
     // dt - initial stepsize 
-    std::vector<Result> doSteps(const State& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt);
+    std::vector<Result> doSteps(const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt);
     
 
     Solver& getSolver();
@@ -62,13 +62,13 @@ Propagator<Solver,Result>::~Propagator()
 
 
 template< typename Solver, typename Result >
-Result Propagator<Solver,Result>::doStep(const State& s, const EphemerisTime& et, const TimeDelta& dt)
+Result Propagator<Solver,Result>::doStep(const PosState& s, const EphemerisTime& et, const TimeDelta& dt)
 {
     return Solver::doStep(ode, s, et, dt);
 }
  
 template< typename Solver, typename Result >
-std::vector<Result> Propagator<Solver,Result>::doSteps(const State& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
+std::vector<Result> Propagator<Solver,Result>::doSteps(const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
 {
     return std::move(Solver::doSteps(ode, s, et0, et1, dt));
 }

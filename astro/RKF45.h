@@ -13,15 +13,15 @@ class RKF45
 public:
     struct Result
     {
-        State s;
+        PosState s;
         EphemerisTime et;
         TimeDelta dt_next;
     };
 
 
-    static Result doStep(const ODE& ode, const State& s, const EphemerisTime& et, const TimeDelta& dt);            
+    static Result doStep(const ODE& ode, const PosState& s, const EphemerisTime& et, const TimeDelta& dt);            
 
-    static std::vector<Result> doSteps(const ODE& ode, const State& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt);            
+    static std::vector<Result> doSteps(const ODE& ode, const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt);            
 
 
 

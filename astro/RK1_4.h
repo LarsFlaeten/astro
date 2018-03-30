@@ -15,14 +15,14 @@ class RK
 public:
     struct Result
     {
-        State s;
+        PosState s;
         EphemerisTime et;
     };
 
 
-    static Result doStep(const ODE& ode, const State& s, const EphemerisTime& et, const TimeDelta& dt);            
+    static Result doStep(const ODE& ode, const PosState& s, const EphemerisTime& et, const TimeDelta& dt);            
 
-    static std::vector<Result> doSteps(const ODE& ode, const State& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt);
+    static std::vector<Result> doSteps(const ODE& ode, const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt);
 
 private:
     static const int n_stages;
@@ -33,7 +33,7 @@ template<int N>
 const int RK<N>::n_stages=N;
 
 template<int N>
-typename RK<N>::Result RK<N>::doStep(const ODE& ode, const State& s, const EphemerisTime& et, const TimeDelta& dt)
+typename RK<N>::Result RK<N>::doStep(const ODE& ode, const PosState& s, const EphemerisTime& et, const TimeDelta& dt)
 {
     std::vector<double> a;
     std::vector< std::vector<double> > b;
@@ -78,8 +78,8 @@ typename RK<N>::Result RK<N>::doStep(const ODE& ode, const State& s, const Ephem
 
     double h = dt.value;
     double t_inner, ti = et.getETValue();
-    astro::State s_inner, si = s;
-    std::vector<astro::State> f;
+    astro::PosState s_inner, si = s;
+    std::vector<astro::PosState> f;
 
     // Evaluate the time derivates at N points within the interval dt
     for(int i = 1; i <= n_stages; ++i)
@@ -109,7 +109,7 @@ typename RK<N>::Result RK<N>::doStep(const ODE& ode, const State& s, const Ephem
 
 }
 template<int N>
-std::vector<typename RK<N>::Result> RK<N>::doSteps(const ODE& ode, const State& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
+std::vector<typename RK<N>::Result> RK<N>::doSteps(const ODE& ode, const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
 {
     std::vector<Result> res;
     // Initial value:

@@ -42,25 +42,25 @@ void StateTest::TearDown()
 {
 }
 
-TEST_F(StateTest, OperatorTest1)
+TEST_F(StateTest, TranslationOperatorTest1)
 {
-    State s1;
+    PosState s1;
     s1.r = vec3d(1.0, 2.0, 3.0);
     s1.v = vec3d(4.0, 5.0, 6.0);
-    State s2;
+    PosState s2;
     s2.r = vec3d(1.0, 2.0, 3.0);
     s2.v = vec3d(4.0, 5.0, 6.0);
      
-    State s3 = s1 + s2;
+    PosState s3 = s1 + s2;
 
     ASSERT_EQ(s3.r, vec3d(2.0, 4.0, 6.0));
     ASSERT_EQ(s3.v, vec3d(8.0, 10.0, 12.0));
     
-    State s4;
+    PosState s4;
     s4.r = 0.5*s2.r;
     s4.v = 0.5*s2.v;
 
-    State sn = s2 - s4;
+    PosState sn = s2 - s4;
     ASSERT_EQ(sn.r, vec3d(0.5, 1.0, 1.5));
     ASSERT_EQ(sn.v, vec3d(2.0, 2.5, 3.0));
 
@@ -81,17 +81,17 @@ TEST_F(StateTest, OperatorTest1)
 
 
     // Abs
-    sn = State(vec3d(-1, -2, -3), vec3d(-4, -5, -6));
+    sn = PosState(vec3d(-1, -2, -3), vec3d(-4, -5, -6));
     sn = abs(sn);
     ASSERT_EQ(sn.r, s1.r);
     ASSERT_EQ(sn.v, s1.v);
 
 }
 
-TEST_F(StateTest, InfNormTest)
+TEST_F(StateTest, TranslationInfNormTest)
 {
-    boost::numeric::odeint::vector_space_norm_inf< astro::State > norm_inf;
-    State s1;
+    boost::numeric::odeint::vector_space_norm_inf< astro::PosState > norm_inf;
+    PosState s1;
     s1.r = vec3d(1.0, 2.0, 3.0);
     s1.v = vec3d(4.0, 5.0, 6.0);
 

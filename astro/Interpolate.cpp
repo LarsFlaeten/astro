@@ -3,7 +3,7 @@
 namespace astro
 {
 
-void   hermite(const State& s1, const State& s2, double f, State& out)
+void   hermite(const PosState& s1, const PosState& s2, double f, PosState& out)
 {
     double h1 =  2.0*pow(f,3.0) - 3.0*pow(f,2.0) + 1;
     double h2 = -2.0*pow(f,3.0) + 3.0*pow(f,2.0);

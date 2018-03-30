@@ -64,13 +64,13 @@ struct OrbitElements
 	// Retrieves the state vector at the given time:
 	// This method uses OE and not Spice, due to speed
 	// (The two are otherwise equivalent)	
-	State	toStateVector(const EphemerisTime& et);    	
+	PosState	toStateVector(const EphemerisTime& et);    	
 
     // Convert a state vector to orbit elements for the same frame of reference
 	// at the given epoch
     // mu is the gravitational parameter of the reference (attracting) body
     static OrbitElements fromStateVector(
-        const State& state,
+        const PosState& state,
         const EphemerisTime& epoch,
         double mu);
 
@@ -85,13 +85,13 @@ struct OrbitElements
     // Using method from [2]
     // mu is the gravitational parameter of the reference (attracting) body
     static OrbitElements fromStateVectorOE(
-        const State& state,
+        const PosState& state,
         const EphemerisTime& epoch,
         double mu);
 
     // Using the Spice library
     static OrbitElements fromStateVectorSpice(
-        const State& state,
+        const PosState& state,
         const EphemerisTime& epoch,
         double mu);
 
@@ -125,13 +125,13 @@ struct OrbitElements
 
     // Converts the current orbital elements to a state vector in the same
     // frame of reference. Using method from [1] ++
-    State   toStateVectorOE(const EphemerisTime& et);
+    PosState   toStateVectorOE(const EphemerisTime& et);
 
 
     // Converts the current orbital elements to a state vector in the same
     // frame of reference. Using the spice method
     // et: Time to resolve the state vector
-    State   toStateVectorSpice(const EphemerisTime& et);
+    PosState   toStateVectorSpice(const EphemerisTime& et);
 
 };
 

@@ -34,12 +34,12 @@ void    RKF45::setTolerance(double _tol)
     RKF45::tol = _tol;
 }
 
-RKF45::Result RKF45::doStep(const ODE& ode, const State& s, const EphemerisTime& et, const TimeDelta& dt)
+RKF45::Result RKF45::doStep(const ODE& ode, const PosState& s, const EphemerisTime& et, const TimeDelta& dt)
 {
     double h = dt.value;
     double t_inner, ti = et.getETValue();
-    astro::State s_inner, si = s;
-    std::vector<astro::State> f;
+    astro::PosState s_inner, si = s;
+    std::vector<astro::PosState> f;
 
     // Evaluate the time derivates at six points within the interval dt
     for(int i = 1; i <= 6; ++i)
@@ -55,7 +55,7 @@ RKF45::Result RKF45::doStep(const ODE& ode, const State& s, const EphemerisTime&
     }
 
     // Compute maximum truncation error:
-    astro::State te;
+    astro::PosState te;
     te.r = vec3d::ZERO;
     te.v = vec3d::ZERO;
     for(int i = 0; i < 6; ++i)
@@ -114,7 +114,7 @@ RKF45::Result RKF45::doStep(const ODE& ode, const State& s, const EphemerisTime&
 
 }
  
-std::vector<RKF45::Result> RKF45::doSteps(const ODE& ode, const State& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
+std::vector<RKF45::Result> RKF45::doSteps(const ODE& ode, const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
 {
     std::vector<Result> res;
     // Initial value:

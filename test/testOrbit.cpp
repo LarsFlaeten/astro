@@ -55,7 +55,7 @@ OrbitTest::~OrbitTest()
 void OrbitTest::SetUp()
 {
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 

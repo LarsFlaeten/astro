@@ -62,7 +62,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromState)
 {
 
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -94,7 +94,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromState2)
 {
 
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -121,7 +121,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
     double mu = mu_earth;
 
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);    
     double v = state.v.length();
@@ -360,7 +360,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateOpt)
     double mu_earth = 398600.0;
 
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -392,7 +392,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateOpt)
 TEST_F(OrbitElementsTest, OrbitalElementsOEBenchmarkTime)
 {
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -408,7 +408,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsSpiceBenchmarkTime)
 {
 
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -426,7 +426,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsOptimizedTime)
     double mu_earth = 398600.0;
 
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -479,7 +479,7 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVector)
     oe.mu = mu_earth;
     oe.computeDerivedQuantities();
 
-    astro::State state = oe.toStateVectorOE(et);
+    astro::PosState state = oe.toStateVectorOE(et);
 
 
     astro::OrbitElements oe2 = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
@@ -502,13 +502,13 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVector)
 TEST_F(OrbitElementsTest, OrbitElementsToStateVector2)
 {
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
 
-    astro::State state2 = oe.toStateVectorOE(et);
+    astro::PosState state2 = oe.toStateVectorOE(et);
     //print(state);
     //print(state2);
 	ASSERT_LT(fabs(state.r.x-state2.r.x), 1.0E-5);
@@ -538,8 +538,8 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorSpice1)
 
     //print(oe);
 
-    astro::State state0 = oe.toStateVectorOE(et);
-	astro::State state1 = oe.toStateVectorSpice(et);
+    astro::PosState state0 = oe.toStateVectorOE(et);
+	astro::PosState state1 = oe.toStateVectorSpice(et);
     
     //print(state0);
     //print(state1);
@@ -585,14 +585,14 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorSpice1)
 TEST_F(OrbitElementsTest, OrbitElementsToStateVectorSpice2)
 {
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorSpice(state, et, mu_earth);
 	//print(oe);
 
-	astro::State state1 = oe.toStateVectorSpice(et);
+	astro::PosState state1 = oe.toStateVectorSpice(et);
 	//std::cout << "Original" << std::endl;
 	//print(state);
 	//std::cout << "Recovered" << std::endl;
@@ -898,7 +898,7 @@ TEST_F(OrbitElementsTest, Kepler2HypConvergenceTest)
 TEST_F(OrbitElementsTest, OrbitElementsToStateVectorComp)
 {
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -923,8 +923,8 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorComp)
 
     // Get state 1000s later:
     EphemerisTime et2(1000.0);
-    astro::State state1 = oe1.toStateVectorOE(et2);
-    astro::State state2 = oe1.toStateVectorSpice(et2);
+    astro::PosState state1 = oe1.toStateVectorOE(et2);
+    astro::PosState state2 = oe1.toStateVectorSpice(et2);
     //print(state1);
     //print(state2);
     ASSERT_LT(fabs(state2.r.x-state1.r.x), 1.0E-5);
@@ -934,8 +934,8 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorComp)
     ASSERT_LT(fabs(state2.v.y-state1.v.y), 1.0E-5);
     ASSERT_LT(fabs(state2.v.z-state1.v.z), 1.0E-5);
 
-    astro::State state3 = oe2.toStateVectorOE(et2);
-    astro::State state4 = oe2.toStateVectorSpice(et2);
+    astro::PosState state3 = oe2.toStateVectorOE(et2);
+    astro::PosState state4 = oe2.toStateVectorSpice(et2);
     ASSERT_LT(fabs(state3.r.x-state4.r.x), 1.0E-5);
     ASSERT_LT(fabs(state3.r.y-state4.r.y), 1.0E-5);
     ASSERT_LT(fabs(state3.r.z-state4.r.z), 1.0E-5);
@@ -967,7 +967,7 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorComp)
 TEST_F(OrbitElementsTest, OrbitElementsToStateVectorBenchmarkEllipticOE)
 {
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -978,13 +978,13 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorBenchmarkEllipticOE)
     EphemerisTime et2(1000.0);
 
     for(int i = 0; i < 1000000; ++i)
-        astro::State state1 = oe1.toStateVectorOE(et2);
+        astro::PosState state1 = oe1.toStateVectorOE(et2);
 }
 
 TEST_F(OrbitElementsTest, OrbitElementsToStateVectorBenchmarkEllipticSpice)
 {
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -996,7 +996,7 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorBenchmarkEllipticSpice)
     EphemerisTime et2(1000.0);
 
     for(int i = 0; i < 1000000; ++i)
-        astro::State state1 = oe1.toStateVectorSpice(et2);
+        astro::PosState state1 = oe1.toStateVectorSpice(et2);
 }
 
 TEST_F(OrbitElementsTest, OrbitElementsToStateVectorBenchmarkHypOE)
@@ -1024,7 +1024,7 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorBenchmarkHypOE)
     EphemerisTime et2(1000.0);
 
     for(int i = 0; i < 1000000; ++i)
-        astro::State state1 = oe2.toStateVectorOE(et2);
+        astro::PosState state1 = oe2.toStateVectorOE(et2);
 }
 
 TEST_F(OrbitElementsTest, OrbitElementsToStateVectorBenchmarkHypSpice)
@@ -1052,14 +1052,14 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorBenchmarkHypSpice)
     EphemerisTime et2(1000.0);
 
     for(int i = 0; i < 1000000; ++i)
-        astro::State state1 = oe2.toStateVectorSpice(et2);
+        astro::PosState state1 = oe2.toStateVectorSpice(et2);
 }
 
 
 TEST_F(OrbitElementsTest, OrbitPropagationTest1)
 {
     // [1], Example 4.3:
-    astro::State   state;
+    astro::PosState   state;
     state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
     state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -1071,7 +1071,7 @@ TEST_F(OrbitElementsTest, OrbitPropagationTest1)
 
     EphemerisTime et2(T);
 
-    astro::State state1 = oe1.toStateVector(et2);
+    astro::PosState state1 = oe1.toStateVector(et2);
     ASSERT_LT(fabs(state.r.x-state1.r.x), 1.0E-5);
     ASSERT_LT(fabs(state.r.y-state1.r.y), 1.0E-5);
     ASSERT_LT(fabs(state.r.z-state1.r.z), 1.0E-5);
@@ -1166,7 +1166,7 @@ TEST_F(OrbitElementsTest, OrbitPropagationTest1)
     double t100 = Mh/oe35.n;   
     ASSERT_LT(fabs(t100-4141), 1.0); // Time at v = 100 deg = 4141s
 
-    State state35 = oe35.toStateVector(EphemerisTime(4141));
+    PosState state35 = oe35.toStateVector(EphemerisTime(4141));
     double r100 = state35.r.length();
     //std::cout << r100 << std::endl;
     ASSERT_LT(fabs(r100-48497), 6); // Radius at 4141s = 48497 km
@@ -1205,7 +1205,7 @@ TEST_F(OrbitElementsTest, OrbitPropagationTest1)
 
 TEST_F(OrbitElementsTest, HyperbolicAsymptote)
 {
-    astro::State s;
+    astro::PosState s;
     s.r = vec3d(6378 + 400, 0.0, 0.0);
     //double v = 7.66895; // Circular
     double v = 10.84509; // roughly eccentric (to six decimals on e)
@@ -1215,7 +1215,7 @@ TEST_F(OrbitElementsTest, HyperbolicAsymptote)
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(s, et, mu_earth);
     //std::cout << oe << std::endl; 
     // Propagate the orbit for a long time:
-    State s_inf = oe.toStateVector(et + 3.5*60*60*24);
+    PosState s_inf = oe.toStateVector(et + 3.5*60*60*24);
     //std::cout << s << std::endl;
     //std::cout << s_inf << std::endl;
     

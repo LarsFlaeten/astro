@@ -23,7 +23,7 @@ public:
     virtual ~Orbit();
 
     // The essential method of all orbits in astro:
-    virtual State   getState(const EphemerisTime& et) = 0;
+    virtual PosState   getState(const EphemerisTime& et) = 0;
 
     // We need more stuff here, such as get frame etc...
 
@@ -36,7 +36,7 @@ public:
     SimpleOrbit(const OrbitElements& oe);
     virtual ~ SimpleOrbit();
 
-    virtual State getState(const EphemerisTime& et);
+    virtual PosState getState(const EphemerisTime& et);
 
     // returns the period of the orbit. If this is not a periodic orbit
     // (parabolic, hyperbolic) the return value is negative

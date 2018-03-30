@@ -32,14 +32,14 @@ double hyperbolicExcessVelocity(double mu, double a)
     return sqrt(-mu/a);
 }
 
-OrbitElements OrbitElements::fromStateVector(const State& state, const EphemerisTime& epoch, double mu)
+OrbitElements OrbitElements::fromStateVector(const PosState& state, const EphemerisTime& epoch, double mu)
 {
     return OrbitElements::fromStateVectorOE(state, epoch, mu);
 }
 
 
  
-OrbitElements OrbitElements::fromStateVectorOE(const State& state, const EphemerisTime& epoch, double mu)
+OrbitElements OrbitElements::fromStateVectorOE(const PosState& state, const EphemerisTime& epoch, double mu)
 {
     if(mu < 0)
         throw AstroException("Non-positive mass give for primary body");
@@ -352,12 +352,12 @@ std::pair<double,int> OrbitElements::Kepler2(double M, double e)
 
 }
 
-State   OrbitElements::toStateVector(const EphemerisTime& et)
+PosState   OrbitElements::toStateVector(const EphemerisTime& et)
 {
     return toStateVectorOE(et);
 }
 
-State   OrbitElements::toStateVectorOE(const EphemerisTime& et)
+PosState   OrbitElements::toStateVectorOE(const EphemerisTime& et)
 {
 
     // Get the Mean Anomaly:
@@ -397,7 +397,7 @@ State   OrbitElements::toStateVectorOE(const EphemerisTime& et)
     mat3d Q_X_to_xp = R3_w * R1_i * R3_Omega;
     mat3d Q_xp_to_X = Q_X_to_xp.transpose();
 
-    State state;
+    PosState state;
 
     state.r = Q_xp_to_X * Rxp;
     state.v = Q_xp_to_X * Vxp;
@@ -406,7 +406,7 @@ State   OrbitElements::toStateVectorOE(const EphemerisTime& et)
     return state;
 }
 
-OrbitElements OrbitElements::fromStateVectorSpice(const State& state, const EphemerisTime& epoch, double mu)
+OrbitElements OrbitElements::fromStateVectorSpice(const PosState& state, const EphemerisTime& epoch, double mu)
 {
     astro::Spice(); // Init spice
     
@@ -452,7 +452,7 @@ OrbitElements OrbitElements::fromStateVectorSpice(const State& state, const Ephe
 }
 
 
-State   OrbitElements::toStateVectorSpice(const EphemerisTime& et)
+PosState   OrbitElements::toStateVectorSpice(const EphemerisTime& et)
 {
     double elts[8];
 
@@ -475,7 +475,7 @@ State   OrbitElements::toStateVectorSpice(const EphemerisTime& et)
     }
     astro::Spice().checkError();
 
-    astro::State state;
+    astro::PosState state;
     state.r.x = st[0];
     state.r.y = st[1];
     state.r.z = st[2];

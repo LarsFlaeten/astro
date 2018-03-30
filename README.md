@@ -83,7 +83,7 @@ Date/Time in ISO: 2000-01-01T12:00:00, in Julian Day(UTC): JD 2451545.00000
 This example shows how to establish a Keplerian (unperturbed, 2-body) orbit from a state vector.
 
 ```
-astro::State   state;
+astro::PosState   state;
 state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
 state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -120,7 +120,7 @@ Mean motion:         0.000766349 [rad/s]
 
 This example shows how to establish a keplerian orbit from a state vector, and how to retrieve orbit positions as a function of time.
 ```
-astro::State   state;
+astro::PosState   state;
 state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
 state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 

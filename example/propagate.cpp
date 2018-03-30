@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     // **************************************************************************
    	// Roughly same orbit as 2&3, but with zero inclination,
 	// and mean anomaly at epoch at periapsis
-	astro::State   state0;
+	astro::PosState   state0;
     state0.r = vec3d(7283.46, 0.0, 0.0);  //[km]
     state0.v = vec3d(0.0, 58311.7/7283.46, 0.0);      //[km/s]
 
@@ -218,8 +218,8 @@ int main(int argc, char **argv)
     // Test of ODEints implementation.
     else if(method.compare("RK4O")==0)
     {
-        runge_kutta4< astro::State, double, astro::State, double, vector_space_algebra > rk4;
-        astro::State s = state0;
+        runge_kutta4< astro::PosState, double, astro::PosState, double, vector_space_algebra > rk4;
+        astro::PosState s = state0;
         if(p_sta)
             std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << et0.getETValue() << "\t" << 
             s.r.x << "\t" << s.r.y << "\t" << s.r.z << "\t" <<

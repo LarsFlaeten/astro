@@ -29,12 +29,12 @@ void    RKF78::setTolerance(double _tol)
 
 }
 
-RKF78::Result RKF78::doStep(const ODE& ode, const State& s, const EphemerisTime& et, const TimeDelta& dt)
+RKF78::Result RKF78::doStep(const ODE& ode, const PosState& s, const EphemerisTime& et, const TimeDelta& dt)
 {
     double et_d = et.getETValue(); 
     double DT = dt.value;
     int tries = 0;
-    State si = s;
+    PosState si = s;
 
     while(stepper.try_step(ode, si, et_d, DT) == boost::numeric::odeint::controlled_step_result::fail)
     {
@@ -57,7 +57,7 @@ RKF78::Result RKF78::doStep(const ODE& ode, const State& s, const EphemerisTime&
 
 }
  
-std::vector<RKF78::Result> RKF78::doSteps(const ODE& ode, const State& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
+std::vector<RKF78::Result> RKF78::doSteps(const ODE& ode, const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
 {
     std::vector<Result> res;
     // Initial value:

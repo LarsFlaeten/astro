@@ -22,10 +22,10 @@ public:
     // The force function which evaluates the given force terms
     // and returns the derivatives of the state vector given
     // TODO: Need more parameters later here for perturbations, thrusts etc 
-    State rates(const EphemerisTime& et, const State& s) const;
+    PosState rates(const EphemerisTime& et, const PosState& s) const;
 
     // Essentially same method as rates, but odeint needs it slightly different
-    void operator()(const State& x, State& dxdt, const EphemerisTime& et) const;
+    void operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et) const;
  
 private:
     double  mu;

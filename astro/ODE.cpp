@@ -19,15 +19,15 @@ void ODE::setMu(double _mu)
     mu = _mu;
 }   
 
-State ODE::rates(const EphemerisTime& et, const State& s) const
+PosState ODE::rates(const EphemerisTime& et, const PosState& s) const
 {
-    State sdot;
+    PosState sdot;
     this->operator()(s, sdot, et);
     return sdot;
 
 }
 
-void ODE::operator()(const State& x, State& dxdt, const EphemerisTime& et) const
+void ODE::operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et) const
 {
     
     // Velocities available directly from state

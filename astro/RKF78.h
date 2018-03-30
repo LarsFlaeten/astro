@@ -13,7 +13,7 @@ using namespace boost::numeric::odeint;
 namespace astro
 {
 
-typedef boost::numeric::odeint::runge_kutta_fehlberg78< astro::State, double, astro::State, double, boost::numeric::odeint::vector_space_algebra > rkf78_error_stepper;
+typedef boost::numeric::odeint::runge_kutta_fehlberg78< astro::PosState, double, astro::PosState, double, boost::numeric::odeint::vector_space_algebra > rkf78_error_stepper;
 
 typedef boost::numeric::odeint::controlled_runge_kutta < rkf78_error_stepper > rkf78_controlled_stepper;
 
@@ -22,16 +22,16 @@ class RKF78
 public:
     struct Result
     {
-        State s;
+        PosState s;
         EphemerisTime et;
         TimeDelta dt_next;
         int numTries;
     };
 
 
-    static Result doStep(const ODE& ode, const State& s, const EphemerisTime& et, const TimeDelta& dt);            
+    static Result doStep(const ODE& ode, const PosState& s, const EphemerisTime& et, const TimeDelta& dt);            
 
-    static std::vector<Result> doSteps(const ODE& ode, const State& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt);            
+    static std::vector<Result> doSteps(const ODE& ode, const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt);            
 
 
 

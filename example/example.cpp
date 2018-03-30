@@ -82,7 +82,7 @@ int main(int argc, char **argv)
     // **************************************************************************
     if(example == 2)
     {
-        astro::State   state;
+        astro::PosState   state;
         state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
         state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
     // **************************************************************************
     if(example == 3)
     {
-        astro::State   state;
+        astro::PosState   state;
         state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
         state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
     {
 		// Roughly same orbit as 2&3, but with zero inclination,
 		// and mean anomaly at epoch at periapsis
-		astro::State   state;
+		astro::PosState   state;
         state.r = vec3d(7283.46, 0.0, 0.0);  //[km]
         state.v = vec3d(0.0, 58311.7/7283.46, 0.0);      //[km/s]
 
@@ -175,7 +175,7 @@ int main(int argc, char **argv)
 	    
 
  	    astro::EphemerisTime eti = et;
-        astro::State statei = state;
+        astro::PosState statei = state;
         int i = 0;
         while(1)
         {
@@ -213,9 +213,9 @@ int main(int argc, char **argv)
     // **************************************************************************
     if(example == 5)
     {
-        astro::State s1 = {vec3d(0,0,0), vec3d(0,2,0)};
-        astro::State s2 = {vec3d(1,2,0), vec3d(1,0,0)};	        
-        astro::State sn;
+        astro::PosState s1 = {vec3d(0,0,0), vec3d(0,2,0)};
+        astro::PosState s2 = {vec3d(1,2,0), vec3d(1,0,0)};	        
+        astro::PosState sn;
         for(double t = 0.0; t < 1.0; t += 0.1)
         {
             astro::hermite(s1, s2, t, sn);
