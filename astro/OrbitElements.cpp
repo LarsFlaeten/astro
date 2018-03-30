@@ -22,6 +22,16 @@ using ork::mat4d;
 namespace astro
 {
 
+double hyperbolicAsymptote(double eccentricity)
+{
+    return PI - acos(-1.0/eccentricity);
+}
+
+double hyperbolicExcessVelocity(double mu, double a)
+{
+    return sqrt(-mu/a);
+}
+
 OrbitElements OrbitElements::fromStateVector(const State& state, const EphemerisTime& epoch, double mu)
 {
     return OrbitElements::fromStateVectorOE(state, epoch, mu);

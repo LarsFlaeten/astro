@@ -20,6 +20,19 @@ namespace astro
 const int KEPLER_MAX_ITERATIONS = 100;
 const double KEPLER_TOLERANCE = 1.0E-10;
 
+
+// Returns the asymptoe (angle between asymptote and the vector from perigee through locus)
+// Undefined behavior for e < 1.0
+double hyperbolicAsymptote(double eccentricty);
+
+// Returns the hyperbolic excess velocity
+// Undefined behavior for e < 1.0
+double hyperbolicExcessVelocity(double mu, double a);
+
+
+
+
+
 // The six orbital elements of a Keplerian orbit
 struct OrbitElements
 {
