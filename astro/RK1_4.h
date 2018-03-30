@@ -5,6 +5,7 @@
 #include "Time.h"
 #include "State.h"
 #include "ODE.h"
+#include "Exceptions.h"
 namespace astro
 {
 
