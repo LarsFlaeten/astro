@@ -1203,4 +1203,48 @@ TEST_F(OrbitElementsTest, OrbitPropagationTest1)
 	
 }
 
+TEST_F(OrbitElementsTest, HyperbolicAsymptote)
+{
+    astro::State s;
+    s.r = vec3d(6378 + 400, 0.0, 0.0);
+    //double v = 7.66895; // Circular
+    double v = 10.84509; // roughly eccentric (to six decimals on e)
+    s.v = vec3d(0, 0, v*1.1);
+    
 
+    astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(s, et, mu_earth);
+    //std::cout << oe << std::endl; 
+    // Propagate the orbit for a long time:
+    State s_inf = oe.toStateVector(et + 3.5*60*60*24);
+    //std::cout << s << std::endl;
+    //std::cout << s_inf << std::endl;
+    
+    // the state vector should now roughly be asymptotic.
+    // Compare to hyperbolic excess velocity:
+    // This one is a bit tricky, since velocity is slowly converging
+    // and we will start to encounter problems in the Kepler solver
+    // 3.5 days above seems to be eround the limit of cenvergence for
+    // the above orbit..
+    // TODO: We need to map this behaviour. 
+    // Non-convergendce happens outside the SOI for this orbit (e = 1.42),
+    // but this mght not be the case for other eccentricities.
+    // Generally it is therfore unpredictable to base the simulator on
+    // keplerian hyperbolic orbits for long time spans.. We might also
+    // get into trouble with pacthed conics method. Will just have to wait and see.
+    // Current maxiter is 100, we might have to relax on this..
+    double v_inf = s_inf.v.length();
+    ASSERT_LT(fabs(v_inf- astro::hyperbolicExcessVelocity(mu_earth, oe.a)), 0.06);
+    
+    // asymptotic angles are more easy
+    double hyp_asym = astro::hyperbolicAsymptote(oe.e);
+    vec3d v0 = -s.r.normalize();
+    vec3d v1 = s_inf.v.normalize();
+    vec3d v2 = s_inf.r.normalize();
+    double hyp_asym1 = acos(v0.dotproduct(v1)); // Asymptote from velocity
+    double hyp_asym2 = acos(v0.dotproduct(v2)); // Asymptote from position
+  
+    ASSERT_LT(fabs(hyp_asym - hyp_asym1), 0.0005); // 0.03 degrees..
+    ASSERT_LT(fabs(hyp_asym - hyp_asym2), 0.02); // 0.03 degrees..
+
+
+}
