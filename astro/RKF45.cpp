@@ -121,7 +121,6 @@ std::vector<RKF45::Result> RKF45::doSteps(const ODE& ode, const State& s, const 
     res.push_back( RKF45::Result({s, et0, dt}));
 
 
-    astro::State statei = s;
     while(res.back().et < et1)
     {
         res.push_back(doStep(ode, res.back().s, res.back().et, res.back().dt_next));
