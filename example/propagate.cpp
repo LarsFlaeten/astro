@@ -123,8 +123,8 @@ int main(int argc, char **argv)
 	
     if(method.compare("RKF45")==0)
     {
-        astro::Propagator<astro::RKF45, astro::RKF45::Result> pr(ode);
-        //astro::RKF45::setTolerance(tolerance);       
+        astro::Propagator<astro::ODE, astro::RKF45> pr(ode);
+        astro::RKF45::setTolerance(tolerance);       
 
         auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
 
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
     else if(method.compare("RKF78")==0)
     {
 
-        astro::Propagator<astro::RKF78, astro::RKF78::Result> pr(ode);
+        astro::Propagator<astro::ODE, astro::RKF78> pr(ode);
         //astro::RKF78::setTolerance(tolerance);
 
         auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
    }     
     else if(method.compare("RK1")==0)
     {
-        astro::Propagator<astro::RK<1>, astro::RK<1>::Result> pr(ode);
+        astro::Propagator<astro::ODE, astro::RK<1, astro::ODE, astro::PosState> > pr(ode);
        
         auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
 
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
     } 
     else if(method.compare("RK2")==0)
     {
-        astro::Propagator<astro::RK<2>, astro::RK<2>::Result> pr(ode);
+        astro::Propagator< astro::ODE, astro::RK<2, astro::ODE, astro::PosState> > pr(ode);
        
         auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
 
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
     } 
     else if(method.compare("RK3")==0)
     {
-        astro::Propagator<astro::RK<3>, astro::RK<3>::Result> pr(ode);
+        astro::Propagator<astro::ODE, astro::RK<3, astro::ODE, astro::PosState> > pr(ode);
        
         auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
 
@@ -202,7 +202,7 @@ int main(int argc, char **argv)
     } 
     else if(method.compare("RK4")==0)
     {
-        astro::Propagator<astro::RK<4>, astro::RK<4>::Result> pr(ode);
+        astro::Propagator<astro::ODE, astro::RK<4, astro::ODE, astro::PosState> > pr(ode);
        
         auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
 

@@ -71,7 +71,7 @@ TEST_F(NumIntTest, RKF78BenchMarkTest)
     astro::TimeDelta period(orbit1.getPeriod() * 5000);
     astro::EphemerisTime et1 = et0 + period;
     
-    astro::Propagator<astro::RKF78, astro::RKF78::Result> pr(ode0);
+    astro::Propagator<astro::ODE, astro::RKF78> pr(ode0);
     astro::RKF78::setTolerance(1.0E-8);       
 
     auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
@@ -92,7 +92,7 @@ TEST_F(NumIntTest, RKF45BenchMarkTest)
     astro::TimeDelta period(orbit1.getPeriod() * 5000);
     astro::EphemerisTime et1 = et0 + period;
     
-    astro::Propagator<astro::RKF45, astro::RKF45::Result> pr(ode0);
+    astro::Propagator<astro::ODE, astro::RKF45> pr(ode0);
     astro::RKF45::setTolerance(1.0E-8);       
 
     auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
@@ -113,7 +113,7 @@ TEST_F(NumIntTest, RKF78HypAsymptote)
     // Propagate the orbit for a long time (12 days), far outside SOI:
     astro::EphemerisTime et1 = et0 + 12*60*60*24;
 
-    astro::Propagator<astro::RKF78, astro::RKF78::Result> pr(ode0);
+    astro::Propagator<astro::ODE, astro::RKF78> pr(ode0);
     astro::RKF78::setTolerance(1.0E-8);       
 
     double DT = 1.0; // Initial dt

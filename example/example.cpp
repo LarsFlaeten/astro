@@ -160,7 +160,7 @@ int main(int argc, char **argv)
    		
 		astro::ODE ode(mu_earth);
 		
-        astro::Propagator<astro::RKF45, astro::RKF45::Result> pr(ode);
+        astro::Propagator<astro::ODE, astro::RKF45> pr(ode);
         astro::TimeDelta period(orbit1.getPeriod());
         astro::TimeDelta dt(1.0);
         

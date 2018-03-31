@@ -9,31 +9,31 @@
 namespace astro
 {
 
-template<int N>
+template<int N, typename ODEType, typename StateType>
 class RK
 {
 public:
     struct Result
     {
-        PosState s;
+        StateType s;
         EphemerisTime et;
     };
 
 
-    static Result doStep(const ODE& ode, const PosState& s, const EphemerisTime& et, const TimeDelta& dt);            
+    static Result doStep(const ODEType& ode, const StateType& s, const EphemerisTime& et, const TimeDelta& dt);            
 
-    static std::vector<Result> doSteps(const ODE& ode, const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt);
+    static std::vector<Result> doSteps(const ODEType& ode, const StateType& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt);
 
 private:
     static const int n_stages;
 
 };
 
-template<int N>
-const int RK<N>::n_stages=N;
+template<int N, typename ODEType, typename StateType>
+const int RK<N, ODEType, StateType>::n_stages=N;
 
-template<int N>
-typename RK<N>::Result RK<N>::doStep(const ODE& ode, const PosState& s, const EphemerisTime& et, const TimeDelta& dt)
+template<int N, typename ODEType, typename StateType>
+typename RK<N, ODEType, StateType>::Result RK<N, ODEType, StateType>::doStep(const ODEType& ode, const StateType& s, const EphemerisTime& et, const TimeDelta& dt)
 {
     std::vector<double> a;
     std::vector< std::vector<double> > b;
@@ -78,8 +78,8 @@ typename RK<N>::Result RK<N>::doStep(const ODE& ode, const PosState& s, const Ep
 
     double h = dt.value;
     double t_inner, ti = et.getETValue();
-    astro::PosState s_inner, si = s;
-    std::vector<astro::PosState> f;
+    StateType s_inner, si = s;
+    std::vector<StateType> f;
 
     // Evaluate the time derivates at N points within the interval dt
     for(int i = 1; i <= n_stages; ++i)
@@ -108,12 +108,12 @@ typename RK<N>::Result RK<N>::doStep(const ODE& ode, const PosState& s, const Ep
 	return res;
 
 }
-template<int N>
-std::vector<typename RK<N>::Result> RK<N>::doSteps(const ODE& ode, const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
+template<int N, typename ODEType, typename StateType>
+std::vector<typename RK<N, ODEType, StateType>::Result> RK<N, ODEType, StateType>::doSteps(const ODEType& ode, const StateType& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
 {
     std::vector<Result> res;
     // Initial value:
-    res.push_back( RK<N>::Result({s, et0}));
+    res.push_back( RK<N, ODEType, StateType>::Result({s, et0}));
 
 
     TimeDelta dti = dt;

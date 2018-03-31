@@ -9,6 +9,7 @@
 #define ORK_API
 #endif
 #include <ork/math/vec3.h>
+#include <ork/math/quat.h>
 
 #include <boost/operators.hpp>
 #include <boost/numeric/odeint.hpp>
@@ -73,6 +74,69 @@ PosState abs( const PosState &p );
 
 
 std::ostream& operator << (std::ostream& os, const astro::PosState& s);
+
+// The rotation state of an object in a given reference coordinate system
+class RotState
+    : boost::addable1< RotState ,
+      boost::addable2< RotState , double ,
+      boost::subtractable1< RotState,
+      boost::subtractable2< RotState, double,
+      boost::multipliable2< RotState, double > > > > >
+{
+public:
+    quatd   q; // Rotation quaternion
+    vec3d   w; // angular velocities in the local frame [radians/s]
+
+    RotState()
+        : q(quatd::ONE), w(vec3d::ZERO)
+    {  }
+
+    RotState(const quatd& _q, const vec3d& _w)
+        : q(_q), w(_w)
+    {  }
+
+    RotState(const double val)
+        : q(val, val, val, val), w(vec3d(val, val, val))
+    {  }
+
+
+    // Is this meaningful? We cant really add quats. But lets implement
+    // Since the integrators need it..
+    RotState& operator+=( const RotState& o)
+    {
+        q.x += o.q.x;
+        q.y += o.q.y;
+        q.z += o.q.z;
+        q.w += o.q.w;
+        w += o.w;
+        return *this;
+    }
+
+    RotState& operator-=( const RotState& o)
+    {
+        q.x -= o.q.x;
+        q.y -= o.q.y;
+        q.z -= o.q.z;
+        q.w -= o.q.w;
+        w -= o.w;
+        return *this;
+    }
+
+    // Again, not really meaningful, but used by the steppers
+    RotState& operator*=( const double a)
+    {
+        q.x *= a;
+        q.y *= a;
+        q.z *= a;
+        q.w *= a;
+        w *= a;
+        return *this;
+    }
+
+};
+
+
+std::ostream& operator << (std::ostream& os, const astro::RotState& s);
 
 
 

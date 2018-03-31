@@ -29,10 +29,11 @@ PosState ODE::rates(const EphemerisTime& et, const PosState& s) const
 
 void ODE::operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et) const
 {
-    
+    // Set r_dot:
     // Velocities available directly from state
     dxdt.r = x.v;
 
+    // Set v_dot:
     // Main gravitational force
     double r = x.r.length();    
     dxdt.v = x.r/pow(r, 3.0);

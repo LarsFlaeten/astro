@@ -18,11 +18,11 @@ struct SimpleResult
 
 
 
-template< typename Solver, typename Result >
+template< typename ODEType, typename Solver, typename Result = typename Solver::Result >
 class Propagator
 {
 public:
-    Propagator(const ODE& ode);
+    Propagator(const ODEType& ode);
     ~Propagator();
    
     // Perform one numerical integrarion step
@@ -42,33 +42,33 @@ public:
     Solver& getSolver();
 
 private:
-    const ODE& ode;
+    const ODEType& ode;
 
 };
 
-template< typename Solver, typename Result >
-Propagator<Solver,Result>::Propagator(const ODE& ode)
+template< typename ODEType, typename Solver, typename Result >
+Propagator<ODEType, Solver, Result>::Propagator(const ODEType& ode)
     : ode(ode)
 {
 
 }
 
-template< typename Solver, typename Result >
-Propagator<Solver,Result>::~Propagator()
+template< typename ODEType, typename Solver, typename Result >
+Propagator<ODEType, Solver, Result>::~Propagator()
 {
 
 }
 
 
 
-template< typename Solver, typename Result >
-Result Propagator<Solver,Result>::doStep(const PosState& s, const EphemerisTime& et, const TimeDelta& dt)
+template< typename ODEType, typename Solver, typename Result >
+Result Propagator<ODEType, Solver, Result>::doStep(const PosState& s, const EphemerisTime& et, const TimeDelta& dt)
 {
     return Solver::doStep(ode, s, et, dt);
 }
  
-template< typename Solver, typename Result >
-std::vector<Result> Propagator<Solver,Result>::doSteps(const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
+template< typename ODEType, typename Solver, typename Result >
+std::vector<Result> Propagator<ODEType, Solver, Result>::doSteps(const PosState& s, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
 {
     return std::move(Solver::doSteps(ode, s, et0, et1, dt));
 }
