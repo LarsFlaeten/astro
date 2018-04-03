@@ -41,4 +41,18 @@ namespace astro
         // + start to reset back to start of original range
     }
 
+
+    std::ostream& operator << (std::ostream& os, const ork::vec3d& v)
+    {
+        os << "[ " << v.x << ", " << v.y << ", " << v.z << " ]";
+        return os;
+    }
+
+    std::ostream& operator << (std::ostream& os, const ork::quatd& q)
+    {
+        os << "[ " << q.x << "i + " << q.y << "j + " << q.z << "k + " << q.w << " ]";
+        return os;
+    }
+
+
 }
