@@ -76,16 +76,18 @@ PosState abs( const PosState &p );
 std::ostream& operator << (std::ostream& os, const astro::PosState& s);
 
 // The rotation state of an object in a given reference coordinate system
+// Usually it is given in the global/inertial frame
 class RotState
-    : boost::addable1< RotState ,
+/*    : boost::addable1< RotState ,
       boost::addable2< RotState , double ,
       boost::subtractable1< RotState,
       boost::subtractable2< RotState, double,
       boost::multipliable2< RotState, double > > > > >
+*/
 {
 public:
-    quatd   q; // Rotation quaternion
-    vec3d   w; // angular velocities in the local frame [radians/s]
+    quatd   q; // Rotation quaternion in the given frame
+    vec3d   w; // angular velocities in the given frame [radians/s]
 
     RotState()
         : q(quatd::ONE), w(vec3d::ZERO)
@@ -95,7 +97,7 @@ public:
         : q(_q), w(_w)
     {  }
 
-    RotState(const double val)
+/*    RotState(const double val)
         : q(val, val, val, val), w(vec3d(val, val, val))
     {  }
 
@@ -132,7 +134,7 @@ public:
         w *= a;
         return *this;
     }
-
+*/
 };
 
 
@@ -142,7 +144,7 @@ std::ostream& operator << (std::ostream& os, const astro::RotState& s);
 
 }
 
-// also only for steppers with error control
+// Required by ODEINT steppers with error control
 namespace boost { namespace numeric { namespace odeint {
 template<>
 struct vector_space_norm_inf< astro::PosState >
