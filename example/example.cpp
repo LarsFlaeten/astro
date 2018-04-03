@@ -213,12 +213,14 @@ int main(int argc, char **argv)
     // **************************************************************************
     if(example == 5)
     {
-        astro::PosState s1 = {vec3d(0,0,0), vec3d(0,2,0)};
-        astro::PosState s2 = {vec3d(1,2,0), vec3d(1,0,0)};	        
+        astro::PosState s1 = {vec3d(0,0,0), vec3d(0,4,0)};
+        astro::EphemerisTime et1(0.0);
+        astro::PosState s2 = {vec3d(1,2,0), vec3d(2,0,0)};	        
+        astro::EphemerisTime et2(1.0);
         astro::PosState sn;
         for(double t = 0.0; t < 1.0; t += 0.1)
         {
-            astro::hermite(s1, s2, t, sn);
+            astro::hermite(s1, et1, s2, et2, et1 + astro::TimeDelta(t), sn);
             std::cout << sn.r.x << "\t" << sn.r.y << "\t" << sn.r.z << "\t";
             std::cout << sn.v.x << "\t" << sn.v.y << "\t" << sn.v.z << std::endl;
 
