@@ -1,3 +1,4 @@
+#include "../astro/Util.h"
 #include "../astro/State.cpp"
 #include <gtest/gtest.h>
 
@@ -101,8 +102,126 @@ TEST_F(StateTest, TranslationInfNormTest)
 
     s1.v.z = -21;
     ASSERT_EQ(norm_inf(s1), 21);
-
-
-    
  
 }
+
+TEST_F(StateTest, QuatMulTest)
+{
+    quatd p(1, 2, 3, 4); p = p.normalize();
+    double p0 = p.w; vec3d P(p.x, p.y, p.z);
+
+    quatd q(3, 1, 4, 2); q = q.normalize();
+    double q0 = q.w; vec3d Q(q.x, q.y, q.z);
+
+    // Ork quat mul
+    quatd r1 = p*q;
+     
+    // Ref quat mul
+    double r20 = p0*q0 - P.dotproduct(Q);
+    vec3d R2(p0*Q + q0*P + P.crossProduct(Q));
+    quatd r2(R2.x, R2.y, R2.z, r20);
+
+    ASSERT_LT(fabs(r1.x- r2.x), 1.0E-10);
+    ASSERT_LT(fabs(r1.y- r2.y), 1.0E-10);
+    ASSERT_LT(fabs(r1.z- r2.z), 1.0E-10);
+    ASSERT_LT(fabs(r1.w- r2.w), 1.0E-10);
+
+
+
+
+
+    //std::cout << "Ork: " << r1 << std::endl;
+    //std::cout << "alt: " << r2 << std::endl;
+
+}
+
+TEST_F(StateTest, RotQuatTest1)
+{
+    vec3d v1(0.1, 0.5, 0.7);
+
+    quatd q0(1, 0, 0, 1);
+    q0 = q0.normalize();
+
+    vec3d v2 = q0 * v1;
+    quatd q2 = q0 * quatd(v1.x, v1.y, v1.z, 0) * q0.inverse();
+
+    ASSERT_LT(fabs(v2.x- q2.x), 1.0E-10);
+    ASSERT_LT(fabs(v2.y- q2.y), 1.0E-10);
+    ASSERT_LT(fabs(v2.z- q2.z), 1.0E-10);
+
+
+    //std::cout << v2 << std::endl;
+    //std::cout << q2 << std::endl;
+
+
+}
+
+TEST_F(StateTest, OrkQuatMulVecBenchmark)
+{
+    vec3d v1(0.1, 0.5, 0.7);
+
+    quatd q0(1, 0, 0, 1);
+    q0 = q0.normalize();
+
+    for(int i = 0; i < 10000000; i++)
+        vec3d v2 = q0 * v1;
+}
+
+// 56% execution time compared to above... Allmost twice as fast!
+TEST_F(StateTest, AltQuatMulVecBenchmark)
+{
+    vec3d v1(0.1, 0.5, 0.7);
+
+    quatd q0(1, 0, 0, 1);
+    q0 = q0.normalize();
+    quatd q0_inv = q0.inverse();
+    for(int i = 0; i < 10000000; i++)
+        quatd q2 = q0 * quatd(v1.x, v1.y, v1.z, 0) * q0_inv;
+}
+
+TEST_F(StateTest, RotateTest1)
+{
+
+    // Reference vectors:
+    vec3d ex(1, 0, 0);
+    vec3d ey(0, 1, 0);
+    vec3d ez(0, 0, 1);
+
+    RotState rs;
+    rs.q = quatd(ey, -astro::PIHALF); // A ship turned about y axis - 90 deg
+    // At periapsis (rp, 0, 0), this shoul equate to a Nadir+ orientation
+    // with the roof of the ship turned to the primary
+    ASSERT_LT((rs.q*ex - ez).length(), 1.0E-6); // Local x is global z
+    ASSERT_LT((rs.q*ey - ey).length(), 1.0E-6); // local y is global y
+    ASSERT_LT((rs.q*ez - -ex).length(), 1.0E-6);// Local z is neg global x
+
+    // Local angular velocity about z: (turing local left towards prograde)
+    vec3d wb = astro::PIHALF*ez;
+
+    // Global angular velocity should then be negative about global x:
+    quatd w = rs.q * quatd(wb.x, wb.y, wb.z, 0.0) * rs.q.inverse();
+    rs.w = vec3d(w.x, w.y, w.z);
+    ASSERT_LT((rs.w.normalize() - -ex).length(), 1.0E-6);
+
+    //std::cout << "wb: " << wb << std::endl;
+    //std::cout << "w:  " << rs.w << std::endl;
+
+    // A ship @PE turned prograde:
+    rs.q = quatd(ez, astro::PIHALF);
+
+    // We want our roof towards the primary
+    // This would then be a right roll about local x (negative):
+    wb = -astro::PIHALF*ex;
+    w = rs.q * quatd(wb.x, wb.y, wb.z, 0.0) * rs.q.inverse();
+    rs.w = vec3d(w.x, w.y, w.z);
+    // And shold give us a negative turn bout global y:
+    ASSERT_LT((rs.w.normalize() - -ey).length(), 1.0E-6);
+
+   
+    
+    
+}
+
+
+
+
