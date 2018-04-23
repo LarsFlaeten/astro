@@ -128,6 +128,17 @@ TEST_F(TimeTest, Operatorstest)
     et0 -= dt;
     ASSERT_EQ((et1 - et0).value, dt.value);
 
+
+    et0 += dt;
+    ASSERT_EQ((et1 >= et0), true);
+    ASSERT_EQ((et0 >= et1), true);
+    et0 += dt;
+    ASSERT_EQ((et0 >= et1), true);
+    ASSERT_EQ((et1 >= et0), false);
+
+
+
+
 }
 
 

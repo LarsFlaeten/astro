@@ -88,6 +88,14 @@ public:
     {
         return et<other.et ? true : false;
     }
+    bool operator>=(const EphemerisTime& other) const
+    {
+        return et>=other.et ? true : false;
+    }
+    bool operator<=(const EphemerisTime& other) const
+    {
+        return et<=other.et ? true : false;
+    }
 private:
     // The ephemeris time
     double et;
