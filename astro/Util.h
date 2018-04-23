@@ -39,15 +39,17 @@ namespace astro
 
 	//Normalizes any number to an arbitrary range 
     double wrap( const double value, const double start, const double end ); 
+    
+
 
 
     // Prettyprinters 
     std::ostream& operator << (std::ostream& os, const ork::vec3d& v);
     std::ostream& operator << (std::ostream& os, const ork::quatd& q);
 
-
-
 }
+
+
 
 
 

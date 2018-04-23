@@ -42,6 +42,7 @@ namespace astro
     }
 
 
+
     std::ostream& operator << (std::ostream& os, const ork::vec3d& v)
     {
         os << "[ " << v.x << ", " << v.y << ", " << v.z << " ]";
@@ -54,5 +55,5 @@ namespace astro
         return os;
     }
 
-
 }
+
