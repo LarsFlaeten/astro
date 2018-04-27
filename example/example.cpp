@@ -2,14 +2,17 @@
 
 #include <cxxopts.hpp>
 
-
+#include <astro/Util.h>
 #include <astro/SpiceCore.h>
 #include <astro/Time.h>
 #include <astro/State.h>
 #include <astro/Orbit.h>
 #include <astro/ODE.h>
 #include <astro/Propagator.h>
+#include <astro/PCDM.h>
 #include <astro/Interpolate.h>
+
+using namespace astro;
 
 int main(int argc, char **argv)
 {
@@ -163,48 +166,22 @@ int main(int argc, char **argv)
         astro::Propagator<astro::ODE, astro::RKF45> pr(ode);
         astro::TimeDelta period(orbit1.getPeriod());
         astro::TimeDelta dt(1.0);
-        
-       
-        // create vector of results, and start with initial condition: 
-        std::vector<astro::RKF45::Result> results;
-        results.push_back({state, et, dt}); 
-       
-        // creat vector of orbit properties, so we can track those over time: 
-        std::vector<astro::OrbitElements>  oes;
-        oes.push_back(oe);
-	    
 
- 	    astro::EphemerisTime eti = et;
-        astro::PosState statei = state;
-        int i = 0;
-        while(1)
-        {
-            ++i;
-            auto res = pr.doStep(statei, eti, dt);
-		   
-            oes.push_back(astro::OrbitElements::fromStateVector(statei, eti, mu_earth));
-            results.push_back(res);
-             
-            dt = res.dt_next;
-            eti = res.et;
-            statei = res.s;
-            
-             
-            if(res.et > et + period)
-                break;
-        }
+        // Do the integration:      
+        auto resv = pr.doSteps(state, et, et+period, dt);
 
         // Dump positions to stdout:
-#if 0
-        for(astro::RKF45::Result res : results)
+        for(auto res : resv)
         {
-            std::cout << res.et.getETValue() << "\t" << res.s.r.x << "\t" << res.s.r.y << "\t" << res.s.r.z << std::endl;
-        }
-#endif
+            std::cout << res.et.getETValue() << "\t" << res.dt_next.value << "\t" << res.s.r.x << "\t" << res.s.r.y << "\t" << res.s.r.z ;
 
-        // Dump angular momentum and semimajor axis to stdout:
-        for(astro::OrbitElements oen : oes)
-            std::cout << oen.h << "\t" << oen.a << std::endl;
+            // Angular momentum and semimajor axis shoud be stable:
+            auto oe = astro::OrbitElements::fromStateVector(res.s, res.et, mu_earth);
+
+            std::cout << "\t" << oe.h << "\t" << oe.a << std::endl;
+        }
+
+
 	}
 
     // **************************************************************************
@@ -214,21 +191,65 @@ int main(int argc, char **argv)
     if(example == 5)
     {
         astro::PosState s1 = {vec3d(0,0,0), vec3d(0,4,0)};
-        astro::EphemerisTime et1(0.0);
-        astro::PosState s2 = {vec3d(1,2,0), vec3d(2,0,0)};	        
-        astro::EphemerisTime et2(1.0);
+        astro::EphemerisTime et1(1000.0);
+        astro::PosState s2 = {vec3d(1000,2000,0), vec3d(2,0,0)};	        
+        astro::EphemerisTime et2(2000.0);
         astro::PosState sn;
         for(double t = 0.0; t < 1.0; t += 0.1)
         {
-            astro::hermite(s1, et1, s2, et2, et1 + astro::TimeDelta(t), sn);
+            astro::hermite(s1, et1, s2, et2, et1 + astro::TimeDelta((et2-et1).value*t), sn);
             std::cout << sn.r.x << "\t" << sn.r.y << "\t" << sn.r.z << "\t";
             std::cout << sn.v.x << "\t" << sn.v.y << "\t" << sn.v.z << std::endl;
-
-
-
-
-
         }
     }
+
+    // **************************************************************************
+    // Example 6 - Integration rotations
+    // This example shows how to numerically integrate rotation states
+    // **************************************************************************
+    if(example == 6)
+    {
+        double w = 0.1;
+        astro::RotState rs;
+        rs.q = quatd(0, 0, 0, 1); // "Unit" quaternion
+        rs.w = vec3d(w, 0.0, 0.0); // rotation about global X by 0.1 rad/s
+
+        // The differential equation for rotations:
+        astro::RotODE rode;
+
+        astro::EphemerisTime et(12345);
+        // Find the time when we shold be rotated 90 degrees by x:
+        double T = astro::PIHALF / w;
+        astro::EphemerisTime et2 = et + TimeDelta(T);
+        
+
+        astro::TimeDelta dt(1/60.0);
+        //astro::TimeDelta dt(1.0/60);
+
+        
+        auto resv = astro::PCDM::doSteps(rode, rs, et, et2, dt);
+
+        // After this, x will be x, y will be z, and z will be -y.
+        vec3d ex = vec3d::UNIT_X;
+        vec3d ey = vec3d::UNIT_Y;
+        vec3d ez = vec3d::UNIT_Z;
+
+        ex = resv.back().rs.q * ex;
+        ey = resv.back().rs.q * ey;
+        ez = resv.back().rs.q * ez;
+
+        std::cout << ex << std::endl;
+        std::cout << ey << std::endl;
+        std::cout << ez << std::endl;
+
+        std::cout << resv.back().rs.q.length() << std::endl;
+
+
+
+       
+    }
+
+
+    
     return 0;
 }

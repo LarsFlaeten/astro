@@ -138,12 +138,11 @@ TEST_F(NumIntTest, RKF78HypAsymptote)
   
     ASSERT_LT(fabs(hyp_asym - hyp_asym1), 0.0005); // 0.03 degrees..
     ASSERT_LT(fabs(hyp_asym - hyp_asym2), 0.0032); // 0.2 degrees..
-
-
-
-
-
 }
 
+TEST_F(NumIntTest, RotTest)
+{
+
+}
 
 
