@@ -56,6 +56,12 @@ PCDM::Result PCDM::doStep(const RotODE& rode, const RotState& rs, const Ephemeri
     double F = wn14_l*DT*0.25;
     vec3d tmp = wn14*(1.0/wn14_l);
     tmp *= sin(F);
+    // Add guard against zero angular velocity:
+    if(wn14_l < 1.0E-8)
+    {
+        F = 0.0;
+        tmp = vec3d::ZERO;
+    }
     quatd qprime_n12 = quatd(tmp.x, tmp.y, tmp.z, cos(F))*qn;
     
     // (60)
@@ -69,6 +75,12 @@ PCDM::Result PCDM::doStep(const RotODE& rode, const RotState& rs, const Ephemeri
     F = wn12_l*DT*0.5;
     tmp = wn12*(1.0/wn12_l);
     tmp *= sin(F);
+    // Add guard against zero velocity
+    if(wn12_l < 1.0E-8)
+    {
+        F = 0.0;
+        tmp = vec3d::ZERO;
+    }
     quatd qn1 = quatd(tmp.x, tmp.y, tmp.z, cos(F))*qn;
 
 
