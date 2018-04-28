@@ -36,8 +36,13 @@ PCDM::Result PCDM::doStep(const RotODE& rode, const RotState& rs, const Ephemeri
     // (57)
     // angular velocities at n+1/4 and n+1/2
     vec3d wndot = rsn_dot.w;
-    vec3d wbn14 = wbn + 0.25*wndot*DT;
-    vec3d wbn12 = wbn + 0.5 *wndot*DT;
+
+    // Transform wndot to body coordinates wbndot
+    quatd q_wndot = quatd(wndot.x, wndot.y, wndot.z, 0);
+    quatd q_wbndot = qn_inv*q_wndot*qn;
+    vec3d wbndot = vec3d(q_wbndot.x, q_wbndot.y, q_wbndot.z);
+    vec3d wbn14 = wbn + 0.25*wbndot*DT;
+    vec3d wbn12 = wbn + 0.5 *wbndot*DT;
 
     // (58)
     // Angular velocity in global frame at n+1/4
