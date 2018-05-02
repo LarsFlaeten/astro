@@ -3,6 +3,9 @@
 
 #include "State.h"
 #include "Time.h"
+#include "Exceptions.h"
+
+#include <ork/math/mat3.h>
 
 namespace astro
 {
@@ -39,11 +42,35 @@ private:
 class RotODE
 {
 public:
-    RotODE();
+    // CTOR
+    // Ib is the inertial matrix
+    // Default is the identity matrix
+    RotODE(const ork::mat3d& Ib = ork::mat3d::IDENTITY);
+
     virtual ~RotODE();
 
     // The force function for rotations
     RotState rates(const EphemerisTime& et, const RotState& s) const;
+    
+    // Assume constant torque over the time step
+    // TODO: Implement linear varying torque over the time step?
+    // Set global frame torque
+    // (Gravity gradient etc)
+    void setGlobalTorque(const ork::vec3d& t);
+
+    // Set body frame torque
+    // (From thrusters etc)
+    void setBodyTorque(const ork::vec3d& tb);
+
+    // Set the inertial matrix in body frame
+    void setInertialMatrix(const ork::mat3d& Ib);
+
+private:
+
+    vec3d   t;      // global torque
+    vec3d   t_b;    // body frame torque
+    mat3d   i_b;    // body fram inertal matrix
+    mat3d   i_b_inv;// inverse inertial matrix
 
 };
 
