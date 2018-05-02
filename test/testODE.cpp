@@ -5,6 +5,7 @@
 #include <cmath>
 
 using namespace boost::numeric::odeint;
+using namespace astro;
 
 class ODETest : public ::testing::Test {
 
@@ -49,9 +50,21 @@ void ODETest::TearDown()
 {
 }
 
-TEST_F(ODETest, EmptyTest)
+TEST_F(ODETest, RotODESingularInertia)
 {
+    ork::mat3d I_singular = ork::mat3d::ZERO;
+    RotODE rode;
+    ASSERT_THROW(rode.setInertialMatrix(I_singular), astro::AstroException);
+
+    ork::mat3d I_id = ork::mat3d::IDENTITY;
+    ASSERT_NO_THROW(rode.setInertialMatrix(I_id));
+
+    // Test inertia set in construction of rot ode
+    ASSERT_THROW(RotODE rode2(I_singular), AstroException);
+    ASSERT_NO_THROW(RotODE rode2(I_id));
 
 
+
+    
 }
 
