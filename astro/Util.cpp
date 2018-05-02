@@ -41,6 +41,13 @@ namespace astro
         // + start to reset back to start of original range
     }
 
+    ork::vec3d transform(const ork::quatd& q1, const ork::vec3d& v, const ork::quatd& q2)
+    {
+        ork::quatd q_v = ork::quatd(v.x, v.y, v.z, 0.0);
+        ork::quatd res_q_v = q1 * q_v * q2;
+        return ork::vec3d(res_q_v.x, res_q_v.y, res_q_v.z);
+    }
+
 
 
     std::ostream& operator << (std::ostream& os, const ork::vec3d& v)

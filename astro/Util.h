@@ -40,7 +40,11 @@ namespace astro
 	//Normalizes any number to an arbitrary range 
     double wrap( const double value, const double start, const double end ); 
     
-
+    // Transforms a vector by a quaternion (and its inverse)
+    // Usage (if Q denotes the orientation of a body):
+    // v_b = transform(Q_inv, v,   Q)
+    // v   = transform(Q,     v_b, Q_inv)
+    ork::vec3d transform(const ork::quatd& q1, const ork::vec3d& v, const ork::quatd& q2);
 
 
     // Prettyprinters 
