@@ -5,7 +5,7 @@
 #include "../astro/RKF45.cpp"
 #include "../astro/Orbit.h"
 #include "../astro/ODE.h"
-#include "../astro/PCDM.cpp"
+#include "../astro/PCDM.h"
 
 #include <gtest/gtest.h>
 
@@ -380,4 +380,89 @@ TEST_F(NumIntTest, PCDMTestZeroW)
 
 }
 
+// Application of torque positive x test
+TEST_F(NumIntTest, PCDMTestTorqueXP)
+{
+        double w = 0.1; // The average angular velocity we want
+        astro::RotState rs;
+        rs.q = quatd(0, 0, 0, 1); // "Unit" quaternion
+        rs.w = vec3d(0.0, 0.0, 0.0); // zero angular velocity
+ 
+        // The differential equation for rotations:
+        astro::RotODE rode;
 
+        astro::EphemerisTime et(12345);
+        // Find the time when we shold be rotated 90 degrees by the axis:
+        double T = astro::PIHALF / w;
+        astro::EphemerisTime et2 = et + TimeDelta(T);
+        
+        //Apply torque
+        rode.setBodyTorque(vec3d(2*w/T, 0, 0));
+
+       
+
+        astro::TimeDelta dt(1/60.0);
+
+        // Do the integration 
+        auto resv = astro::PCDM::doSteps(rode, rs, et, et2, dt);
+
+
+        // After this, x will be x, y will be z, and z will be -y.
+        // body vectors
+        vec3d ex = vec3d::UNIT_X;
+        vec3d ey = vec3d::UNIT_Y;
+        vec3d ez = vec3d::UNIT_Z;
+
+        // Transform to global:
+        ex = resv.back().rs.q * ex;
+        ey = resv.back().rs.q * ey;
+        ez = resv.back().rs.q * ez;
+
+        assert_almost_eq(ex, vec3d::UNIT_X, 1.0E-10);
+        assert_almost_eq(ey, vec3d::UNIT_Z, 1.0E-10);
+        assert_almost_eq(ez, -vec3d::UNIT_Y, 1.0E-10);
+}
+ 
+// Application of torque negative x test
+TEST_F(NumIntTest, PCDMTestTorqueXN)
+{
+        double w = 0.1; // The average angular velocity we want
+        astro::RotState rs;
+        rs.q = quatd(0, 0, 0, 1); // "Unit" quaternion
+        rs.w = vec3d(0.0, 0.0, 0.0); // zero angular velocity
+ 
+        // The differential equation for rotations:
+        astro::RotODE rode;
+
+        astro::EphemerisTime et(12345);
+        // Find the time when we shold be rotated 90 degrees by the axis:
+        double T = astro::PIHALF / w;
+        astro::EphemerisTime et2 = et + TimeDelta(T);
+        
+        //Apply torque
+        rode.setBodyTorque(vec3d(-2*w/T, 0, 0));
+
+       
+
+        astro::TimeDelta dt(1/60.0);
+
+        // Do the integration 
+        auto resv = astro::PCDM::doSteps(rode, rs, et, et2, dt);
+
+
+        // After this, x will be x, y will be -z, and z will be y.
+        // body vectors
+        vec3d ex = vec3d::UNIT_X;
+        vec3d ey = vec3d::UNIT_Y;
+        vec3d ez = vec3d::UNIT_Z;
+
+        // Transform to global:
+        ex = resv.back().rs.q * ex;
+        ey = resv.back().rs.q * ey;
+        ez = resv.back().rs.q * ez;
+
+        assert_almost_eq(ex, vec3d::UNIT_X, 1.0E-10);
+        assert_almost_eq(ey, -vec3d::UNIT_Z, 1.0E-10);
+        assert_almost_eq(ez, vec3d::UNIT_Y, 1.0E-10);
+}
+ 
