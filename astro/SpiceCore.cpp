@@ -77,5 +77,56 @@ void    SpiceCore::loadKernel(const std::string& filename)
 
 }
 
+void    SpiceCore::getRelativeGeometricState(int id, int ref_id, const EphemerisTime& et, astro::PosState& state)
+{
+    double s[6];
+    double lt;
+    {
+        std::lock_guard<std::mutex> lock(m);
+        if(ref_id == 0)
+            spkssb_c(id, et.getETValue(), "J2000", s);
+        else
+            spkgeo_c(id, et.getETValue(), "J2000", ref_id, s, &lt);
+    }
+    checkError();
+   
+    state.r.x = s[0];
+    state.r.y = s[1];
+    state.r.z = s[2];
+    state.v.x = s[3];
+    state.v.y = s[4];
+    state.v.z = s[5];
+
+
+
+
+
+
+}
+
+void    SpiceCore::getAbborationCode(AbborationCorrection ac, std::string& code)
+{
+    switch(ac) {
+        case(None):
+            code = "NONE";
+            break;
+        case(LightTime):
+            code = "LT";
+            break;
+        case(LightTimeStellar):
+            code = "LT+S";
+            break;
+        case(CNLightTime):
+            code = "CN";
+            break;
+        case(CNLightTimeStellar):
+            code = "CN+S";
+            break;
+        default:
+            throw SpiceException("Abboration type not implemented", "", "");
+    }
+}
+
+
 
 }
