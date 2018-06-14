@@ -214,7 +214,7 @@ double OrbitElements::eccentricAnomalyFromMeanAnomaly(double M, double e)
     if( e < 0.0 )
         throw astro::AstroException("ERROR, negative eccentricity is not allowed");
 	
-	std::pair<double,int> res;
+    std::pair<double,int> res;
     res = Kepler2(M, e);
 
     return res.first;
@@ -250,8 +250,8 @@ std::pair<double,int> OrbitElements::Kepler1(double M, double e)
 {
     if ( e < 0.0 )
         throw astro::AstroException("ERROR, negative eccentricity is not allowed");
-	if ( e >= 1.0 )
-		throw astro::AstroException("ERROR, Kepler2 is for e < 1.0");
+    if ( e >= 1.0 )
+        throw astro::AstroException("ERROR, Kepler2 is for e < 1.0");
 
 
     // Reduce Anomaly to [0..2PI]
