@@ -44,8 +44,15 @@ public:
     // returns the relative geometric state beween two celestial objects
     // int tgt_id: Target id
     // int obs_id: Observer id
+    // state: State to be written
     void    getRelativeGeometricState(int tgt_id, int obs_id, const EphemerisTime& et, astro::PosState& state);
 
+    // returns the relative geometric position beween two celestial objects,
+    // optionally corrected for light time and stellar abboration
+    // int tgt_id: Target id
+    // int obs_id: Observer id
+    // state: State to be written
+    void    getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, ork::vec3d& pos, AbborationCorrection abcorr = None);
 
 private:
     // Global mutex for spice common resource access

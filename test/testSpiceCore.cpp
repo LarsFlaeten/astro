@@ -139,3 +139,114 @@ TEST_F(SpiceCoreTest, getGeometricStateEarthMars)
     assert_almost_eq(state1.v - state2.v, state3.v, 1.0E-6);
 
 }
+
+TEST_F(SpiceCoreTest, getPositionTest1)
+{
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/lsk/naif0012.tls"));
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/spk/de430.bsp"));
+
+    astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
+    astro::PosState state1, state2;
+
+    // Position of earth from SSB
+    ASSERT_NO_THROW(astro::Spice().getRelativeGeometricState(399,0, et, state1));  
+    vec3d pos1, pos2, pos3;
+    ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,0,et, pos1, astro::AbborationCorrection::None));
+    assert_almost_eq(state1.r, pos1, 1.0E-10);
+
+    // Position of earth from mars
+    ASSERT_NO_THROW(astro::Spice().getRelativeGeometricState(399,4, et, state2));  
+    ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,4,et, pos1, astro::AbborationCorrection::None));
+    ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,4,et, pos2));
+    ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,4,et, pos3, astro::AbborationCorrection::LightTime));
+    assert_almost_eq(state2.r, pos1, 1.0E-10);
+    assert_almost_eq(pos1, pos2, 1.0E-10);
+
+
+    // Pos3 should be offset from pos2, since it was calculated with light time correction
+    ASSERT_NE(pos2.x, pos3.x);
+    ASSERT_NE(pos2.y, pos3.y);
+    ASSERT_NE(pos2.z, pos3.z);
+
+
+
+
+
+
+
+    // Check outside tome bonds for de430
+    et = astro::EphemerisTime::fromString("2650 Jan 25");
+    ASSERT_THROW(astro::Spice().getRelativePosition(399,0,et,pos1), astro::SpiceException);
+
+
+}
+
+TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrNone)
+{
+    // Retreive 100000 states:
+    astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
+    ork::vec3d pos;
+
+    for(int i = 0; i < 100000; ++i) {
+        et += astro::TimeDelta(1.0);
+        astro::Spice().getRelativePosition(399,0, et, pos,
+                astro::AbborationCorrection::None);  
+    }
+   
+}
+
+TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrLightTime)
+{
+    // Retreive 100000 states:
+    astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
+    ork::vec3d pos;
+
+    for(int i = 0; i < 100000; ++i) {
+        et += astro::TimeDelta(1.0);
+        astro::Spice().getRelativePosition(399,0, et, pos,
+                astro::AbborationCorrection::LightTime);  
+    }
+   
+}
+TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrLightTimeStellar)
+{
+    // Retreive 100000 states:
+    astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
+    ork::vec3d pos;
+
+    for(int i = 0; i < 100000; ++i) {
+        et += astro::TimeDelta(1.0);
+        astro::Spice().getRelativePosition(399,0, et, pos,
+                astro::AbborationCorrection::LightTimeStellar);  
+    }
+   
+}
+
+TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrCNLightTime)
+{
+    // Retreive 100000 states:
+    astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
+    ork::vec3d pos;
+
+    for(int i = 0; i < 100000; ++i) {
+        et += astro::TimeDelta(1.0);
+        astro::Spice().getRelativePosition(399,0, et, pos,
+                astro::AbborationCorrection::CNLightTime);  
+    }
+   
+}
+TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrCNLightTimeStellar)
+{
+    // Retreive 100000 states:
+    astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
+    ork::vec3d pos;
+
+    for(int i = 0; i < 100000; ++i) {
+        et += astro::TimeDelta(1.0);
+        astro::Spice().getRelativePosition(399,0, et, pos,
+                astro::AbborationCorrection::CNLightTimeStellar);  
+    }
+   
+}
+
+
