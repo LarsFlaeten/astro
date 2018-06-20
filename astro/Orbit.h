@@ -30,6 +30,9 @@ public:
 
 };
 
+
+// A simple orbit propagated by Keplerien elements
+// The orbit is a two body (unperturbed) orbit
 class SimpleOrbit : public Orbit
 {
 public:
