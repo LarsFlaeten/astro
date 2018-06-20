@@ -29,9 +29,10 @@ protected:
 
 
 ODETest::ODETest()
-  :  mu_earth(398600.0), ode0(mu_earth)
+  :  mu_earth(398600.0)
 {
-		
+    astro::Attractor earth = {vec3d::ZERO, mu_earth};
+    ode0.addAttractor(earth);
    	
 
 

@@ -8,8 +8,7 @@
 namespace astro
 {
 
-ODE::ODE(double _mu)
-    : mu(_mu)
+ODE::ODE()
 {
 
 }
@@ -18,11 +17,6 @@ ODE::~ODE()
 {
 
 }
-
-void ODE::setMu(double _mu)
-{
-    mu = _mu;
-}   
 
 PosState ODE::rates(const EphemerisTime& et, const PosState& s) const
 {
@@ -39,11 +33,16 @@ void ODE::operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et)
     dxdt.r = x.v;
 
     // Set v_dot:
-    // Main gravitational force
-    double r = x.r.length();    
-    dxdt.v = x.r/pow(r, 3.0);
-    dxdt.v *= -mu;
-
+    // Main gravitational force from attractors
+    dxdt.v = ork::vec3d::ZERO;
+    for(const Attractor& a : attractors) {
+        vec3d ac = ork::vec3d::ZERO;
+        vec3d r = x.r - a.p;
+        double R = r.length();    
+        ac = r/pow(R, 3.0);
+        ac *= -a.GM;
+        dxdt.v += ac;
+    }
     // TODO:add other things here:
     // -Oblateness effect
     // -Atmospheric drag
@@ -52,7 +51,18 @@ void ODE::operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et)
 
 
 }
- 
+
+void ODE::addAttractor(const Attractor& a)
+{
+    attractors.push_back(a);
+}
+
+void ODE::clearAttractors()
+{
+    attractors.clear();
+}
+
+
 RotODE::RotODE(const mat3d& Ib)
 {
     setInertialMatrix(Ib);
@@ -121,7 +131,6 @@ RotState RotODE::rates(const EphemerisTime& et, const RotState& rs) const
     vec3d wbdot = i_b_inv * (Lb_dot /* - i_b_dot*wb*/);
     vec3d wdot = transform(Q, wbdot, Q_inv);
 
-    //rs.dot.w = I_inv*(torque +++ ) or somehting
     rs_dot.w = wdot;
     
 

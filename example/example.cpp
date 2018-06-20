@@ -161,8 +161,10 @@ int main(int argc, char **argv)
         astro::SimpleOrbit orbit1(oe);    
         //std::cout << orbit1.getOrbitElements() << std::endl;
    		
-		astro::ODE ode(mu_earth);
-		
+		astro::ODE ode;
+	    astro::Attractor a = {vec3d::ZERO, mu_earth};
+        ode.addAttractor(a);
+
         astro::Propagator<astro::ODE, astro::RKF45> pr(ode);
         astro::TimeDelta period(orbit1.getPeriod());
         astro::TimeDelta dt(1.0);

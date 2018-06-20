@@ -112,7 +112,9 @@ int main(int argc, char **argv)
     astro::SimpleOrbit orbit1(oe0);    
    	
     // The differential equation
-    astro::ODE ode(mu_earth);
+    astro::Attractor a = {vec3d::ZERO, mu_earth};
+    astro::ODE ode;
+    ode.addAttractor(a);
 
     // The time period to integrate	
     astro::TimeDelta period(orbit1.getPeriod() * periods);

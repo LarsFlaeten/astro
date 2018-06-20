@@ -33,15 +33,18 @@ protected:
     astro::OrbitElements oe0;
     astro::EphemerisTime et0;
     double mu_earth;
+    astro::Attractor earth;
     astro::ODE  ode0;
 };
 
 
 
 NumIntTest::NumIntTest()
-  :  et0(0), mu_earth(398600.0), ode0(mu_earth)
+  :  et0(0), mu_earth(398600.0)
 {
-    
+    earth = {vec3d::ZERO, mu_earth};
+    ode0.addAttractor(earth);
+
     state0.r = vec3d(7283.46, 0.0, 0.0);  //[km]
     state0.v = vec3d(0.0, 58311.7/7283.46, 0.0);      //[km/s]
 

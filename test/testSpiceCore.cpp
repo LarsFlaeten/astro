@@ -108,7 +108,6 @@ TEST_F(SpiceCoreTest, getGeometricStateBenchmarkTestEarthMoon)
 
 }
 
-
 TEST_F(SpiceCoreTest, getGeometricStateBenchmarkTestEarthSSB2)
 {
     // Retreive 100000 states:
@@ -120,7 +119,23 @@ TEST_F(SpiceCoreTest, getGeometricStateBenchmarkTestEarthSSB2)
         astro::Spice().getRelativeGeometricState(399,0, et, state1);  
     }
    
+}
 
+TEST_F(SpiceCoreTest, getGeometricStateEarthMars)
+{
+    // Retreive 100000 states:
+    astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
+    astro::PosState state1, state2, state3;
+    
+    // Position of earth reletive to SSB
+    astro::Spice().getRelativeGeometricState(399,0, et, state1);  
+    // Position of mars relative to ssb
+    astro::Spice().getRelativeGeometricState(4,0, et, state2);
 
+    // Position of earth as seen from mars
+    astro::Spice().getRelativeGeometricState(399, 4, et, state3);
+    
+    assert_almost_eq(state1.r - state2.r, state3.r, 1.0E-6); 
+    assert_almost_eq(state1.v - state2.v, state3.v, 1.0E-6);
 
 }

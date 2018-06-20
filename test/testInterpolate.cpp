@@ -114,7 +114,9 @@ TEST_F(InterpolateTest, OrbitState1)
     astro::EphemerisTime et01(0);
     astro::EphemerisTime et02(2347589.0);
     double mu_earth(398600.0);
-    astro::ODE  ode(mu_earth);
+    astro::Attractor a = {vec3d::ZERO, mu_earth};
+    astro::ODE  ode;
+    ode.addAttractor(a);
 
     PosState state0;
     double v =  58311.7/7283.46;

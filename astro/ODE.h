@@ -10,6 +10,13 @@
 namespace astro
 {
 
+
+class Attractor
+{
+public:
+    ork::vec3d  p; // Position relative to the frame of reference used
+    double      GM;
+};
 // This is the differential equation for translation. Translation is separated
 // from rotation as these will be integrated separately:
 // - They are not coupled or at least lightly coupled
@@ -21,11 +28,9 @@ namespace astro
 class ODE
 {
 public:
-    ODE(double _mu);
+    ODE();
     virtual ~ODE();
 
-    // Set the current gravitational parameter to be used
-    void    setMu(double _mu);
  
 
     // The force function which evaluates the given force terms
@@ -35,8 +40,11 @@ public:
     // Essentially same method as rates, but odeint needs it slightly different
     virtual void operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et) const;
 
+    virtual void addAttractor(const Attractor& a);
+    virtual void clearAttractors();
+
 private:
-    double mu;
+    std::vector<Attractor> attractors;
 };
 
 class RotODE
