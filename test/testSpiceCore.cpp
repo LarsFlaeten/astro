@@ -151,14 +151,14 @@ TEST_F(SpiceCoreTest, getPositionTest1)
     // Position of earth from SSB
     ASSERT_NO_THROW(astro::Spice().getRelativeGeometricState(399,0, et, state1));  
     vec3d pos1, pos2, pos3;
-    ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,0,et, pos1, astro::AbborationCorrection::None));
+    ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,0,et, pos1, astro::AberrationCorrection::None));
     assert_almost_eq(state1.r, pos1, 1.0E-10);
 
     // Position of earth from mars
     ASSERT_NO_THROW(astro::Spice().getRelativeGeometricState(399,4, et, state2));  
-    ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,4,et, pos1, astro::AbborationCorrection::None));
+    ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,4,et, pos1, astro::AberrationCorrection::None));
     ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,4,et, pos2));
-    ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,4,et, pos3, astro::AbborationCorrection::LightTime));
+    ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,4,et, pos3, astro::AberrationCorrection::LightTime));
     assert_almost_eq(state2.r, pos1, 1.0E-10);
     assert_almost_eq(pos1, pos2, 1.0E-10);
 
@@ -190,7 +190,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrNone)
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
         astro::Spice().getRelativePosition(399,0, et, pos,
-                astro::AbborationCorrection::None);  
+                astro::AberrationCorrection::None);  
     }
    
 }
@@ -204,7 +204,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrLightTime)
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
         astro::Spice().getRelativePosition(399,0, et, pos,
-                astro::AbborationCorrection::LightTime);  
+                astro::AberrationCorrection::LightTime);  
     }
    
 }
@@ -217,7 +217,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrLightTimeStellar)
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
         astro::Spice().getRelativePosition(399,0, et, pos,
-                astro::AbborationCorrection::LightTimeStellar);  
+                astro::AberrationCorrection::LightTimeStellar);  
     }
    
 }
@@ -231,7 +231,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrCNLightTime)
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
         astro::Spice().getRelativePosition(399,0, et, pos,
-                astro::AbborationCorrection::CNLightTime);  
+                astro::AberrationCorrection::CNLightTime);  
     }
    
 }
@@ -244,7 +244,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrCNLightTimeStellar)
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
         astro::Spice().getRelativePosition(399,0, et, pos,
-                astro::AbborationCorrection::CNLightTimeStellar);  
+                astro::AberrationCorrection::CNLightTimeStellar);  
     }
    
 }

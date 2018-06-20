@@ -104,12 +104,12 @@ void    SpiceCore::getRelativeGeometricState(int tgt_id, int obs_id, const Ephem
 
 }
 
-void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, ork::vec3d& pos, AbborationCorrection abcorr)
+void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, ork::vec3d& pos, AberrationCorrection abcorr)
 {
     double p[3];
     double lt;
     std::string ac;
-    getAbborationCode(abcorr, ac);
+    getAberrationCode(abcorr, ac);
     
     {
         std::lock_guard<std::mutex> lock(m);
@@ -122,7 +122,7 @@ void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTi
     pos.z = p[2];
 }
 
-void    SpiceCore::getAbborationCode(AbborationCorrection ac, std::string& code)
+void    SpiceCore::getAberrationCode(AberrationCorrection ac, std::string& code)
 {
     switch(ac) {
         case(None):

@@ -12,10 +12,10 @@
 namespace astro
 {
 
-enum AbborationCorrection {
+enum AberrationCorrection {
     None,               // No correction, i.e geometric state
     LightTime,          // Light Time corrected state
-    LightTimeStellar,   // Light time + stellar abboration (apparent state)
+    LightTimeStellar,   // Light time + stellar aberration (apparent state)
     CNLightTime,        // Converged Newtonian LT
     CNLightTimeStellar  // Converged Newtonian LT + Stellar Abboration
 };
@@ -52,7 +52,7 @@ public:
     // int tgt_id: Target id
     // int obs_id: Observer id
     // state: State to be written
-    void    getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, ork::vec3d& pos, AbborationCorrection abcorr = None);
+    void    getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, ork::vec3d& pos, AberrationCorrection abcorr = None);
 
 private:
     // Global mutex for spice common resource access
@@ -62,7 +62,7 @@ private:
     std::vector<std::string>    loadedKernels;
 
     // Returns the Spice code for abboration
-    void    getAbborationCode(AbborationCorrection ac, std::string& code);
+    void    getAberrationCode(AberrationCorrection ac, std::string& code);
 
 };
 
