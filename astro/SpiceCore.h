@@ -42,7 +42,9 @@ public:
     void    loadKernel(const std::string& filename);
 
     // returns the relative geometric state beween two celestial objects
-    void    getRelativeGeometricState(int id, int ref_id, const EphemerisTime& et, astro::PosState& state);
+    // int tgt_id: Target id
+    // int obs_id: Observer id
+    void    getRelativeGeometricState(int tgt_id, int obs_id, const EphemerisTime& et, astro::PosState& state);
 
 
 private:

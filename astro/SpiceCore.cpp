@@ -77,16 +77,16 @@ void    SpiceCore::loadKernel(const std::string& filename)
 
 }
 
-void    SpiceCore::getRelativeGeometricState(int id, int ref_id, const EphemerisTime& et, astro::PosState& state)
+void    SpiceCore::getRelativeGeometricState(int tgt_id, int obs_id, const EphemerisTime& et, astro::PosState& state)
 {
     double s[6];
     double lt;
     {
         std::lock_guard<std::mutex> lock(m);
-        if(ref_id == 0)
-            spkssb_c(id, et.getETValue(), "J2000", s);
+        if(obs_id == 0)
+            spkssb_c(tgt_id, et.getETValue(), "J2000", s);
         else
-            spkgeo_c(id, et.getETValue(), "J2000", ref_id, s, &lt);
+            spkgeo_c(tgt_id, et.getETValue(), "J2000", obs_id, s, &lt);
     }
     checkError();
    
