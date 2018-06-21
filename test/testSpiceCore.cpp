@@ -249,4 +249,17 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrCNLightTimeStellar)
    
 }
 
+TEST_F(SpiceCoreTest, getPlanetaryConstantsTest)
+{
+    astro::Spice().loadKernel("../data/spice/pck/gm_de431.tpc");
+
+    double gm;
+    astro::Spice().getPlanetaryConstants(399, "GM", 1, &gm);
+    ASSERT_LT(fabs(gm- 3.9860043543609598E+05), 1.0E-4);
+    
+    astro::Spice().getPlanetaryConstants(599, "GM", 1, &gm);
+    ASSERT_LT(fabs(gm- 1.266865349218008E+08), 1.0E-4);
+   
+}
+
 

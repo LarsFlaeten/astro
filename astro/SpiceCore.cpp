@@ -145,6 +145,18 @@ void    SpiceCore::getAberrationCode(AberrationCorrection ac, std::string& code)
     }
 }
 
+void   SpiceCore::getPlanetaryConstants(int id, const std::string& item, int num, double* vals)
+{
+    {
+        std::lock_guard<std::mutex> lock(m);
+        int read_num;
+        auto s = std::to_string(id);
+        bodvrd_c(s.c_str(), item.c_str(), num, &read_num, vals);
+    }
+    checkError();
+
+}
+
 
 
 }

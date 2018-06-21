@@ -54,6 +54,12 @@ public:
     // state: State to be written
     void    getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, ork::vec3d& pos, AberrationCorrection abcorr = None);
 
+
+    // Returns a requested constant/constant set from Spice
+    // typically "GM", "RADII" etc
+    void    getPlanetaryConstants(int id, const std::string& item, int num, double* vals);
+
+
 private:
     // Global mutex for spice common resource access
     std::mutex  m;  
@@ -63,6 +69,8 @@ private:
 
     // Returns the Spice code for abboration
     void    getAberrationCode(AberrationCorrection ac, std::string& code);
+
+
 
 };
 
