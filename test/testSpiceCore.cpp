@@ -259,7 +259,14 @@ TEST_F(SpiceCoreTest, getPlanetaryConstantsTest)
     
     astro::Spice().getPlanetaryConstants(599, "GM", 1, &gm);
     ASSERT_LT(fabs(gm- 1.266865349218008E+08), 1.0E-4);
-   
+    
+    astro::Spice().loadKernel("../data/spice/pck/pck00010.tpc");
+    double radii[3];
+    astro::Spice().getPlanetaryConstants(399, "RADII", 3, radii);
+    ASSERT_GT(radii[0], 0.0);   
+    ASSERT_GT(radii[1], 0.0);   
+    ASSERT_GT(radii[2], 0.0);   
+ 
 }
 
 
