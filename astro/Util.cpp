@@ -61,6 +61,16 @@ namespace astro
         os << "[ " << q.x << "i + " << q.y << "j + " << q.z << "k + " << q.w << " ]";
         return os;
     }
+    
+    std::ostream& operator << (std::ostream& os, const ork::mat3d& m)
+    {
+        for(int i = 0; i < 3; ++i)
+            os << "[ " << m[i][0] << ", " << m[i][1] << ", " << m[i][2] << " ]\n";
+        return os;
+    } 
 
+
+
+ 
 }
 

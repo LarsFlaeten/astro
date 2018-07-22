@@ -50,7 +50,8 @@ namespace astro
     // Prettyprinters 
     std::ostream& operator << (std::ostream& os, const ork::vec3d& v);
     std::ostream& operator << (std::ostream& os, const ork::quatd& q);
-
+    std::ostream& operator << (std::ostream& os, const ork::mat3d& m);
+ 
 }
 
 
