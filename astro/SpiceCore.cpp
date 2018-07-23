@@ -157,6 +157,45 @@ void   SpiceCore::getPlanetaryConstants(int id, const std::string& item, int num
 
 }
 
+// Prints various information about spice core
+std::ostream& operator << (std::ostream& os, const SpiceCore& s)
+{
+    // Return the current number of kernels that have been loaded 
+    // via the KEEPER interface that are of a specified type.  
+    int count;
+    ktotal_c("ALL", &count);
+    
+    os << "Kernel summary\n";
+    os << "============================\n";
 
+    if(count == 0)
+        os << "No kernels loaded\n";
+    else
+        os << count << " kernel files loaded:\n";
+
+    const int FILLEN =   256;
+    const int TYPLEN =   33;
+    const int SRCLEN =  256;
+
+    int        handle;
+
+    char      file  [FILLEN];
+    char       filtyp[TYPLEN];
+    char       source[SRCLEN];
+    int    found;
+
+    for(int i = 0; i < count; ++i)
+    {
+       kdata_c ( i,  "all",    FILLEN,   TYPLEN, SRCLEN, 
+                                   file,   filtyp,  source,  &handle,  &found );  
+
+       kinfo_c ( file, TYPLEN, SRCLEN, filtyp, source, &handle, &found );
+
+        os << "  " << i+1 << ": " << file << "[" << filtyp << "], " << source << "\n";
+    }
+
+    return os;
+}
+ 
 
 }

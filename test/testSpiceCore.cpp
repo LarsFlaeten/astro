@@ -79,6 +79,14 @@ TEST_F(SpiceCoreTest, getStateTest1)
 
 }
 
+TEST_F(SpiceCoreTest, debugDumpTest)
+{
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/lsk/naif0012.tls"));
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/spk/de430.bsp"));
+
+    std::cout << astro::Spice() << std::endl;
+    
+}
 TEST_F(SpiceCoreTest, getGeometricStateBenchmarkTestEarthSSB1)
 {
     // Retreive 100000 states:

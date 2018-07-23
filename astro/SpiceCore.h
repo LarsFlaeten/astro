@@ -60,6 +60,7 @@ public:
     void    getPlanetaryConstants(int id, const std::string& item, int num, double* vals);
 
 
+
 private:
     // Global mutex for spice common resource access
     std::mutex  m;  
@@ -74,6 +75,10 @@ private:
 
 };
 
+// Debug function
+// Prints the loaded kernels from Spice to ostream
+std::ostream& operator << (std::ostream& os, const SpiceCore& s);
+ 
 
 // Singleton access to SpiceCore
 SpiceCore&  Spice();
