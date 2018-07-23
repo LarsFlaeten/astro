@@ -71,6 +71,26 @@ TEST_F(ReferenceFrameTest, InertialFrameTest2)
     ASSERT_EQ(rf == rf2, true);
 
 
+    rf = ReferenceFrame::createBodyFixedSpice(1);
+    ASSERT_EQ(rf.getType(), astro::ReferenceFrameType::BodyFixedNonRotating);
+    rf = ReferenceFrame::createBodyFixedSpice(3);
+    ASSERT_EQ(rf.getType(), astro::ReferenceFrameType::BodyFixedNonRotating);
+    rf = ReferenceFrame::createBodyFixedSpice(6);
+    ASSERT_EQ(rf.getType(), astro::ReferenceFrameType::BodyFixedNonRotating);
+    rf = ReferenceFrame::createBodyFixedSpice(9);
+    ASSERT_EQ(rf.getType(), astro::ReferenceFrameType::BodyFixedNonRotating);
+
+
+    rf = ReferenceFrame::createBodyFixedSpice(301);
+    ASSERT_EQ(rf.getType(), astro::ReferenceFrameType::BodyFixedRotating);
+    rf = ReferenceFrame::createBodyFixedSpice(399);
+    ASSERT_EQ(rf.getType(), astro::ReferenceFrameType::BodyFixedRotating);
+    rf = ReferenceFrame::createBodyFixedSpice(699);
+    ASSERT_EQ(rf.getType(), astro::ReferenceFrameType::BodyFixedRotating);
+
+
+
+
 
 }
 

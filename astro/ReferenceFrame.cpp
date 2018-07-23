@@ -15,7 +15,7 @@ ReferenceFrame::~ReferenceFrame() {
 ork::mat3d  ReferenceFrame::getRotation(const EphemerisTime& et) const {
 
     // If its the J2000, return identity:
-    if(this->getId() == 1)
+    if(this->getType() == ReferenceFrameType::Inertial || this->getType() == ReferenceFrameType::BodyFixedNonRotating)
         return ork::mat3d::IDENTITY;
 
     ork::mat3d tip;
@@ -74,6 +74,10 @@ bool ReferenceFrame::operator==(const ReferenceFrame& other) const {
 
 
 ReferenceFrame  ReferenceFrame::createJ2000() {
+    
+    // We manually create this frame with name and id,
+    // as spice will return wrong frame when using ref id 0 (it return the old
+    // MARSIAU frame
     ReferenceFrame ref;
     ref.type = Inertial;
     ref.spiceName = "J2000";
@@ -87,7 +91,11 @@ ReferenceFrame ReferenceFrame::createBodyFixedSpice(int bodyId) {
         return ReferenceFrame::createJ2000();
     
     ReferenceFrame ref;
-    ref.type = BodyFixed;
+    if(bodyId < 10)
+        ref.type = BodyFixedNonRotating;
+    else
+        ref.type = BodyFixedRotating;
+
     ref.centerId = bodyId;
     // Try to get the frame name and id from Spice. If appropriate kernels are not loaded,
     // this will throw an exception

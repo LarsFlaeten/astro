@@ -11,8 +11,9 @@
 namespace astro {
 
 enum ReferenceFrameType {
-    Inertial,
-    BodyFixed
+    Inertial,               // Allways J2000 axes
+    BodyFixedNonRotating, // Body fixed, but same axis as inertial (J2000)
+    BodyFixedRotating,  // Rotating with the body
 
 };
 
@@ -48,6 +49,8 @@ public:
     static ReferenceFrame createJ2000();
 
     // Creates a body fixed frame with bodyId as center object
+    // For planets and sattelites, this will be a rotating frame
+    // For barycenters, it will be a non-rotating frame
     static ReferenceFrame createBodyFixedSpice(int bodyId);
 
 
