@@ -53,11 +53,11 @@ void ODETest::TearDown()
 
 TEST_F(ODETest, RotODESingularInertia)
 {
-    ork::mat3d I_singular = ork::mat3d::ZERO;
+    mork::mat3d I_singular = mork::mat3d::ZERO;
     RotODE rode;
     ASSERT_THROW(rode.setInertialMatrix(I_singular), astro::AstroException);
 
-    ork::mat3d I_id = ork::mat3d::IDENTITY;
+    mork::mat3d I_id = mork::mat3d::IDENTITY;
     ASSERT_NO_THROW(rode.setInertialMatrix(I_id));
 
     // Test inertia set in construction of rot ode

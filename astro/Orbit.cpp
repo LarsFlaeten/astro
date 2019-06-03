@@ -9,16 +9,13 @@
 
 #include <cspice/SpiceUsr.h>
 
-#ifndef ORK_API
-#define ORK_API
-#endif
-#include <ork/math/vec3.h>
-#include <ork/math/mat3.h>
-#include <ork/math/mat4.h>
+#include <mork/math/vec3.h>
+#include <mork/math/mat3.h>
+#include <mork/math/mat4.h>
 
-using ork::vec3d;
-using ork::mat3d;
-using ork::mat4d;
+using mork::vec3d;
+using mork::mat3d;
+using mork::mat4d;
 
 namespace astro
 {

@@ -95,7 +95,7 @@ TEST_F(UtilTest, RADECTest)
     double dpr = astro::DEGPERRAD;
     // Ref [1], Example 4.1, plus two modifications to get negative dec, and rad in the other quadrant
     // (1)
-    ork::vec3d r(-5368.0, -1784.0, 3691.0); // [km]
+    mork::vec3d r(-5368.0, -1784.0, 3691.0); // [km]
     double ra, dec, range;
     astro::vecToRaDec(r, &range, &ra, &dec); 
     
@@ -105,7 +105,7 @@ TEST_F(UtilTest, RADECTest)
     ASSERT_LT(fabs(ra - 198.4), 1.0E-1);
 
     // (2) - negative dec
-    r = ork::vec3d(-5368.0, -1784.0, -3691.0);
+    r = mork::vec3d(-5368.0, -1784.0, -3691.0);
     astro::vecToRaDec(r, &range, &ra, &dec);
     ra = ra * dpr;
     dec = dec * dpr;
@@ -113,7 +113,7 @@ TEST_F(UtilTest, RADECTest)
     ASSERT_LT(fabs(ra - 198.4), 1.0E-1);
 
     // (3) - other quadrant of rad
-    r = ork::vec3d(-5368.0, 1784.0, -3691.0);
+    r = mork::vec3d(-5368.0, 1784.0, -3691.0);
     astro::vecToRaDec(r, &range, &ra, &dec);
     ra = ra * dpr;
     dec = dec * dpr;
@@ -154,117 +154,117 @@ TEST_F(UtilTest, NormalizeTest)
 
 TEST_F(UtilTest, TransformTest)
 {
-    ork::vec3d ex(1.0, 0.0, 0.0);
-    ork::vec3d ey(0.0, 1.0, 0.0);
-    ork::vec3d ez(0.0, 0.0, 1.0);
+    mork::vec3d ex(1.0, 0.0, 0.0);
+    mork::vec3d ey(0.0, 1.0, 0.0);
+    mork::vec3d ez(0.0, 0.0, 1.0);
 
-    ork::quatd qu(0.0, 0.0, 0.0, 1.0);
+    mork::quatd qu(0.0, 0.0, 0.0, 1.0);
 
     ex = astro::transform(qu, ex, qu.inverse());
     ey = astro::transform(qu, ey, qu.inverse());
     ez = astro::transform(qu, ez, qu.inverse());
  
-    ASSERT_EQ(ex, ork::vec3d(1.0, 0.0, 0.0));
-    ASSERT_EQ(ey, ork::vec3d(0.0, 1.0, 0.0));
-    ASSERT_EQ(ez, ork::vec3d(0.0, 0.0, 1.0));
+    ASSERT_EQ(ex, mork::vec3d(1.0, 0.0, 0.0));
+    ASSERT_EQ(ey, mork::vec3d(0.0, 1.0, 0.0));
+    ASSERT_EQ(ez, mork::vec3d(0.0, 0.0, 1.0));
 }
 
 // Implemented in another test
-void assert_almost_eq(ork::vec3d v1, ork::vec3d v2, double tol);
+void assert_almost_eq(mork::vec3d v1, mork::vec3d v2, double tol);
 
 TEST_F(UtilTest, TransformTestXN)
 {
     // neative pi/2 about x
     // shoud give x->x, z->y, y->-z 
-    ork::vec3d ex = ork::vec3d(1.0, 0.0, 0.0);
-    ork::vec3d ey = ork::vec3d(0.0, 1.0, 0.0);
-    ork::vec3d ez = ork::vec3d(0.0, 0.0, 1.0);
-    ork::quatd q1(ex, -astro::PIHALF);
-    ork::vec3d exp = astro::transform(q1, ex, q1.inverse());
-    ork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
-    ork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
-    assert_almost_eq(exp, ork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
-    assert_almost_eq(eyp, ork::vec3d(0.0, 0.0, -1.0), 1.0E-10);
-    assert_almost_eq(ezp, ork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
+    mork::vec3d ex = mork::vec3d(1.0, 0.0, 0.0);
+    mork::vec3d ey = mork::vec3d(0.0, 1.0, 0.0);
+    mork::vec3d ez = mork::vec3d(0.0, 0.0, 1.0);
+    mork::quatd q1(ex, -astro::PIHALF);
+    mork::vec3d exp = astro::transform(q1, ex, q1.inverse());
+    mork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
+    mork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
+    assert_almost_eq(exp, mork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(0.0, 0.0, -1.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
 }
 
 TEST_F(UtilTest, TransformTestXP)
 {
     // positive pi/2 about x
     // shoud give x->x, z->-y, y->z 
-    ork::vec3d ex = ork::vec3d(1.0, 0.0, 0.0);
-    ork::vec3d ey = ork::vec3d(0.0, 1.0, 0.0);
-    ork::vec3d ez = ork::vec3d(0.0, 0.0, 1.0);
-    ork::quatd q1(ex, astro::PIHALF);
-    ork::vec3d exp = astro::transform(q1, ex, q1.inverse());
-    ork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
-    ork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
-    assert_almost_eq(exp, ork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
-    assert_almost_eq(eyp, ork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
-    assert_almost_eq(ezp, ork::vec3d(0.0, -1.0, 0.0), 1.0E-10);
+    mork::vec3d ex = mork::vec3d(1.0, 0.0, 0.0);
+    mork::vec3d ey = mork::vec3d(0.0, 1.0, 0.0);
+    mork::vec3d ez = mork::vec3d(0.0, 0.0, 1.0);
+    mork::quatd q1(ex, astro::PIHALF);
+    mork::vec3d exp = astro::transform(q1, ex, q1.inverse());
+    mork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
+    mork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
+    assert_almost_eq(exp, mork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, -1.0, 0.0), 1.0E-10);
 }
 
 TEST_F(UtilTest, TransformTestYN)
 {
     // neative pi/2 about y
     // shoud give x->z, y->y, z->-x 
-    ork::vec3d ex = ork::vec3d(1.0, 0.0, 0.0);
-    ork::vec3d ey = ork::vec3d(0.0, 1.0, 0.0);
-    ork::vec3d ez = ork::vec3d(0.0, 0.0, 1.0);
-    ork::quatd q1(ey, -astro::PIHALF);
-    ork::vec3d exp = astro::transform(q1, ex, q1.inverse());
-    ork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
-    ork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
-    assert_almost_eq(exp, ork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
-    assert_almost_eq(eyp, ork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
-    assert_almost_eq(ezp, ork::vec3d(-1.0, 0.0, 0.0), 1.0E-10);
+    mork::vec3d ex = mork::vec3d(1.0, 0.0, 0.0);
+    mork::vec3d ey = mork::vec3d(0.0, 1.0, 0.0);
+    mork::vec3d ez = mork::vec3d(0.0, 0.0, 1.0);
+    mork::quatd q1(ey, -astro::PIHALF);
+    mork::vec3d exp = astro::transform(q1, ex, q1.inverse());
+    mork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
+    mork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
+    assert_almost_eq(exp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(-1.0, 0.0, 0.0), 1.0E-10);
 }
 
 TEST_F(UtilTest, TransformTestYP)
 {
     // positive pi/2 about y
     // shoud give x->-z, y->y, z->x 
-    ork::vec3d ex = ork::vec3d(1.0, 0.0, 0.0);
-    ork::vec3d ey = ork::vec3d(0.0, 1.0, 0.0);
-    ork::vec3d ez = ork::vec3d(0.0, 0.0, 1.0);
-    ork::quatd q1(ey, astro::PIHALF);
-    ork::vec3d exp = astro::transform(q1, ex, q1.inverse());
-    ork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
-    ork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
-    assert_almost_eq(exp, ork::vec3d(0.0, 0.0, -1.0), 1.0E-10);
-    assert_almost_eq(eyp, ork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
-    assert_almost_eq(ezp, ork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
+    mork::vec3d ex = mork::vec3d(1.0, 0.0, 0.0);
+    mork::vec3d ey = mork::vec3d(0.0, 1.0, 0.0);
+    mork::vec3d ez = mork::vec3d(0.0, 0.0, 1.0);
+    mork::quatd q1(ey, astro::PIHALF);
+    mork::vec3d exp = astro::transform(q1, ex, q1.inverse());
+    mork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
+    mork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
+    assert_almost_eq(exp, mork::vec3d(0.0, 0.0, -1.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
 }
 
 TEST_F(UtilTest, TransformTestZN)
 {
     // neative pi/2 about z
     // shoud give x->-y, y->x, z->z 
-    ork::vec3d ex = ork::vec3d(1.0, 0.0, 0.0);
-    ork::vec3d ey = ork::vec3d(0.0, 1.0, 0.0);
-    ork::vec3d ez = ork::vec3d(0.0, 0.0, 1.0);
-    ork::quatd q1(ez, -astro::PIHALF);
-    ork::vec3d exp = astro::transform(q1, ex, q1.inverse());
-    ork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
-    ork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
-    assert_almost_eq(exp, ork::vec3d(0.0, -1.0, 0.0), 1.0E-10);
-    assert_almost_eq(eyp, ork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
-    assert_almost_eq(ezp, ork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+    mork::vec3d ex = mork::vec3d(1.0, 0.0, 0.0);
+    mork::vec3d ey = mork::vec3d(0.0, 1.0, 0.0);
+    mork::vec3d ez = mork::vec3d(0.0, 0.0, 1.0);
+    mork::quatd q1(ez, -astro::PIHALF);
+    mork::vec3d exp = astro::transform(q1, ex, q1.inverse());
+    mork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
+    mork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
+    assert_almost_eq(exp, mork::vec3d(0.0, -1.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
 }
 
 TEST_F(UtilTest, TransformTestZP)
 {
     // positive pi/2 about z
     // shoud give x->y, y->-x, z->z 
-    ork::vec3d ex = ork::vec3d(1.0, 0.0, 0.0);
-    ork::vec3d ey = ork::vec3d(0.0, 1.0, 0.0);
-    ork::vec3d ez = ork::vec3d(0.0, 0.0, 1.0);
-    ork::quatd q1(ez, astro::PIHALF);
-    ork::vec3d exp = astro::transform(q1, ex, q1.inverse());
-    ork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
-    ork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
-    assert_almost_eq(exp, ork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
-    assert_almost_eq(eyp, ork::vec3d(-1.0, 0.0, 0.0), 1.0E-10);
-    assert_almost_eq(ezp, ork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+    mork::vec3d ex = mork::vec3d(1.0, 0.0, 0.0);
+    mork::vec3d ey = mork::vec3d(0.0, 1.0, 0.0);
+    mork::vec3d ez = mork::vec3d(0.0, 0.0, 1.0);
+    mork::quatd q1(ez, astro::PIHALF);
+    mork::vec3d exp = astro::transform(q1, ex, q1.inverse());
+    mork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
+    mork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
+    assert_almost_eq(exp, mork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(-1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
 }
 

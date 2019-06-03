@@ -3,18 +3,15 @@
 
 #include <sstream>
 
-// Decided to use ork::math. Other users need to install ork for this to work.
+// Decided to use mork::math. Other users need to install mork for this to wmork.
 // TODO: Fix dependency in CMakeLists so that this is clear for users
-#ifndef ORK_API
-#define ORK_API
-#endif
-#include <ork/math/vec3.h>
-#include <ork/math/quat.h>
+#include <mork/math/vec3.h>
+#include <mork/math/quat.h>
 
 #include <boost/operators.hpp>
 #include <boost/numeric/odeint.hpp>
 
-using namespace ork;
+using namespace mork;
 
 namespace astro
 {

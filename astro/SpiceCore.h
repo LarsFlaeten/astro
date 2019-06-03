@@ -38,6 +38,9 @@ public:
     // best choice for now..
     void    checkError();
 
+    // Sets whether spice should print errors to screen, in addition to throwing exceptions
+    void    reportErrors(bool rep);
+
     // Loads the given file into spices kernel pool
     void    loadKernel(const std::string& filename);
 
@@ -52,7 +55,7 @@ public:
     // int tgt_id: Target id
     // int obs_id: Observer id
     // state: State to be written
-    void    getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, ork::vec3d& pos, AberrationCorrection abcorr = None);
+    void    getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, mork::vec3d& pos, AberrationCorrection abcorr = None);
 
 
     // Returns a requested constant/constant set from Spice
@@ -72,7 +75,7 @@ private:
     void    getAberrationCode(AberrationCorrection ac, std::string& code);
 
 
-
+    bool    report_errors;
 };
 
 // Debug function

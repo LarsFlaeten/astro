@@ -8,16 +8,13 @@
 
 #include <cspice/SpiceUsr.h>
 
-#ifndef ORK_API
-#define ORK_API
-#endif
-#include <ork/math/vec3.h>
-#include <ork/math/mat3.h>
-#include <ork/math/mat4.h>
+#include <mork/math/vec3.h>
+#include <mork/math/mat3.h>
+#include <mork/math/mat4.h>
 
-using ork::vec3d;
-using ork::mat3d;
-using ork::mat4d;
+using mork::vec3d;
+using mork::mat3d;
+using mork::mat4d;
 
 namespace astro
 {
@@ -384,12 +381,12 @@ PosState   OrbitElements::toStateVectorOE(const EphemerisTime& et)
 
     // Construct Rotatation matrix from perifocal to geocentric equatorial:
     // MOdified with according to [2] as [¡] is inconsistent with rotations
-    mat3d R3_w = mat4d::rotatez(-w*DEGPERRAD).mat3x3();
-    mat3d R1_i = mat4d::rotatex(-i*DEGPERRAD).mat3x3();
-    mat3d R3_Omega = mat4d::rotatez(-omega*DEGPERRAD).mat3x3();
+    mat3d R3_w = mat4d::rotatez(-w).mat3x3();
+    mat3d R1_i = mat4d::rotatex(-i).mat3x3();
+    mat3d R3_Omega = mat4d::rotatez(-omega).mat3x3();
     
-    // Had to use the transpose rotation matrices from ork, since [1] uses
-    // the transpose equivalent of these. Why do this?? The ork ones seem right, they match
+    // Had to use the transpose rotation matrices from mork, since [1] uses
+    // the transpose equivalent of these. Why do this?? The mork ones seem right, they match
     // With rotatino matrices online for RH coordinate systems.. It doesnt seem right what [1] does..
     // But at least all the tests pass by using the transposes.
     // TODO: Look into this later...

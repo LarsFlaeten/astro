@@ -12,13 +12,13 @@ ReferenceFrame::~ReferenceFrame() {
 }
 
 
-ork::mat3d  ReferenceFrame::getRotation(const EphemerisTime& et) const {
+mork::mat3d  ReferenceFrame::getRotation(const EphemerisTime& et) const {
 
     // If its the J2000, return identity:
     if(this->getType() == ReferenceFrameType::Inertial || this->getType() == ReferenceFrameType::BodyFixedNonRotating)
-        return ork::mat3d::IDENTITY;
+        return mork::mat3d::IDENTITY;
 
-    ork::mat3d tip;
+    mork::mat3d tip;
     // If not, we use spice to get the relative rotation:
     {
         std::lock_guard<std::mutex> lock(Spice().mutex());
@@ -30,7 +30,7 @@ ork::mat3d  ReferenceFrame::getRotation(const EphemerisTime& et) const {
         // (We want the inverse of this)
         double tipm[3][3];
         tipbod_c("J2000", centerId, et.getETValue(), tipm);
-        tip = ork::mat3d(tipm);
+        tip = mork::mat3d(tipm);
 
         //for(int i = 0; i < 3; ++i)
         //    std::cout << "[ " << tipm[i][0] << ", " << tipm[i][1] << ", " << tipm[i][2] << " ]\n";

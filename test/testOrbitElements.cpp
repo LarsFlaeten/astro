@@ -9,11 +9,11 @@
 #include <cmath>
 
 // Prettyprinters for vectors etc
-#include "OrkExt.h"
+//#include "OrkExt.h"
 
-using ork::vec3d;
-using ork::mat3d;
-using ork::mat4d;
+using mork::vec3d;
+using mork::mat3d;
+using mork::mat4d;
 
 using namespace astro;
 
@@ -446,18 +446,17 @@ TEST_F(OrbitElementsTest, OrkRotationTest)
     vec3d K = vec3d::UNIT_Z;
 
     // Rotate I 90 degrees about z axis should produce J
-    // Note, ork::mat4 uses degrees!
-    mat3d Q = mat4d::rotatez(90.0).mat3x3();
+    mat3d Q = mat4d::rotatez(radians(90.0)).mat3x3();
     vec3d rot = Q * I;
     ASSERT_LT((rot - J).length(), 1.0E-10);
 
     // Rotate Z -90 degrees about X should give J
-    Q = mat4d::rotatex(-90.0).mat3x3();
+    Q = mat4d::rotatex(radians(-90.0)).mat3x3();
     rot = Q * K;
     ASSERT_LT((rot - J).length(), 1.0E-10);
 
     // Rotate J 90 degrees about I shuold give K
-    Q = mat4d::rotatex(90.0).mat3x3();
+    Q = mat4d::rotatex(radians(90.0)).mat3x3();
     rot = Q * J;
     ASSERT_LT((rot - K).length(), 1.0E-10);
 
@@ -474,7 +473,8 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVector)
     oe.i = 30.0 * rpd;
     oe.omega = 40.0 * rpd;
     oe.w = 60.0 * rpd;
-    oe.M0 = astro::OrbitElements::meanAnomalyFromTrueAnomaly(30 * rpd, oe.e);
+    // Set true anomaly to 30 degrees at epoch, and mean anomaly at epoch accordingly
+    oe.M0 = astro::OrbitElements::meanAnomalyFromTrueAnomaly(30.0 * rpd, oe.e);
     oe.epoch = et;
     oe.mu = mu_earth;
     oe.computeDerivedQuantities();

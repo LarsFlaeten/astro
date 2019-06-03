@@ -34,9 +34,9 @@ void ODE::operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et)
 
     // Set v_dot:
     // Main gravitational force from attractors
-    dxdt.v = ork::vec3d::ZERO;
+    dxdt.v = mork::vec3d::ZERO;
     for(const Attractor& a : attractors) {
-        vec3d ac = ork::vec3d::ZERO;
+        vec3d ac = mork::vec3d::ZERO;
         vec3d r = x.r - a.p;
         double R = r.length();    
         ac = r/pow(R, 3.0);
@@ -66,8 +66,8 @@ void ODE::clearAttractors()
 RotODE::RotODE(const mat3d& Ib)
 {
     setInertialMatrix(Ib);
-    t = ork::vec3d::ZERO;
-    t_b = ork::vec3d::ZERO; 
+    t = mork::vec3d::ZERO;
+    t_b = mork::vec3d::ZERO; 
 
 }
 
@@ -76,18 +76,18 @@ RotODE::~RotODE()
 
 }
 
-void RotODE::setGlobalTorque(const ork::vec3d& _t)
+void RotODE::setGlobalTorque(const mork::vec3d& _t)
 {
     t = _t;
 }
 
 
-void RotODE::setBodyTorque(const ork::vec3d& _tb)
+void RotODE::setBodyTorque(const mork::vec3d& _tb)
 {
     t_b = _tb;
 }
 
-void RotODE::setInertialMatrix(const ork::mat3d& Ib)
+void RotODE::setInertialMatrix(const mork::mat3d& Ib)
 {
     if(fabs(Ib.determinant()) < 1.0E-8)
         throw AstroException("Singular Matrix", "Singular Matrix supplied as inertial matirx to RotODE");
@@ -104,7 +104,7 @@ RotState RotODE::rates(const EphemerisTime& et, const RotState& rs) const
 
     quatd Q = rs.q;
     quatd Q_inv = Q.inverse();
-    double q0 = Q.w; // w is the scalar in ork/quatd
+    double q0 = Q.w; // w is the scalar in mork/quatd
     vec3d q = vec3d(Q.x, Q.y, Q.z);
 
     // Derivative of the quaternion

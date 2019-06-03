@@ -9,11 +9,11 @@
 #include <cmath>
 
 // Prettyprinters for vectors etc
-#include "OrkExt.h"
+//#include "OrkExt.h"
 
-using ork::vec3d;
-using ork::mat3d;
-using ork::mat4d;
+using mork::vec3d;
+using mork::mat3d;
+using mork::mat4d;
 
 using namespace astro;
 

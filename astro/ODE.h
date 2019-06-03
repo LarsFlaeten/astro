@@ -5,7 +5,7 @@
 #include "Time.h"
 #include "Exceptions.h"
 
-#include <ork/math/mat3.h>
+#include <mork/math/mat3.h>
 
 namespace astro
 {
@@ -14,7 +14,7 @@ namespace astro
 class Attractor
 {
 public:
-    ork::vec3d  p; // Position relative to the frame of reference used
+    mork::vec3d  p; // Position relative to the frame of reference used
     double      GM;
 };
 // This is the differential equation for translation. Translation is separated
@@ -53,7 +53,7 @@ public:
     // CTOR
     // Ib is the inertial matrix
     // Default is the identity matrix
-    RotODE(const ork::mat3d& Ib = ork::mat3d::IDENTITY);
+    RotODE(const mork::mat3d& Ib = mork::mat3d::IDENTITY);
 
     virtual ~RotODE();
 
@@ -64,14 +64,14 @@ public:
     // TODO: Implement linear varying torque over the time step?
     // Set global frame torque
     // (Gravity gradient etc)
-    void setGlobalTorque(const ork::vec3d& t);
+    void setGlobalTorque(const mork::vec3d& t);
 
     // Set body frame torque
     // (From thrusters etc)
-    void setBodyTorque(const ork::vec3d& tb);
+    void setBodyTorque(const mork::vec3d& tb);
 
     // Set the inertial matrix in body frame
-    void setInertialMatrix(const ork::mat3d& Ib);
+    void setInertialMatrix(const mork::mat3d& Ib);
 
 private:
 

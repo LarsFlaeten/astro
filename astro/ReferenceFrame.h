@@ -1,10 +1,7 @@
 #ifndef _ASTRO_REFERENCE_FRAME_H_
 #define _ASTRO_REFERENCE_FRAME_H_
 
-#ifndef ORK_API
-#define ORK_API
-#endif
-#include <ork/math/mat3.h>
+#include <mork/math/mat3.h>
 
 #include "Time.h"
 
@@ -30,7 +27,7 @@ public:
     // or to transform body fixed coordinates to inertial:
     // r_j2000 = M * r_body. To transform from inertial to body fixed,
     // use M.inverse()
-    virtual ork::mat3d  getRotation(const EphemerisTime& et) const;
+    virtual mork::mat3d  getRotation(const EphemerisTime& et) const;
 
     virtual ReferenceFrameType getType() const;
 

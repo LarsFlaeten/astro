@@ -50,7 +50,7 @@ TEST_F(SpiceCoreTest, LoadKernelTest1)
     ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/lsk/naif0012.tls"));
 }
 
-void assert_almost_eq(ork::vec3d v1, ork::vec3d v2, double tol);
+void assert_almost_eq(mork::vec3d v1, mork::vec3d v2, double tol);
 
 TEST_F(SpiceCoreTest, getStateTest1)
 {
@@ -68,7 +68,7 @@ TEST_F(SpiceCoreTest, getStateTest1)
     et += astro::TimeDelta(1.0);
     ASSERT_NO_THROW(astro::Spice().getRelativeGeometricState(399,0, et, state2));  
 
-    ork::vec3d diff = state2.r - state1.r;
+    mork::vec3d diff = state2.r - state1.r;
     assert_almost_eq(diff, state1.v, 1.0E-4);
 
 
@@ -193,7 +193,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrNone)
 {
     // Retreive 100000 states:
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
-    ork::vec3d pos;
+    mork::vec3d pos;
 
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
@@ -207,7 +207,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrLightTime)
 {
     // Retreive 100000 states:
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
-    ork::vec3d pos;
+    mork::vec3d pos;
 
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
@@ -220,7 +220,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrLightTimeStellar)
 {
     // Retreive 100000 states:
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
-    ork::vec3d pos;
+    mork::vec3d pos;
 
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
@@ -234,7 +234,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrCNLightTime)
 {
     // Retreive 100000 states:
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
-    ork::vec3d pos;
+    mork::vec3d pos;
 
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
@@ -247,7 +247,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrCNLightTimeStellar)
 {
     // Retreive 100000 states:
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
-    ork::vec3d pos;
+    mork::vec3d pos;
 
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);

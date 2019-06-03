@@ -17,7 +17,7 @@ SpiceCore&  Spice()
 SpiceCore::SpiceCore()
 {
     // We set spice error acting here
-
+    report_errors = false;
     // We change spice to not abort program, but return on error:
     char error[] = "RETURN";
     erract_c( "SET", 0 , error);
@@ -30,6 +30,11 @@ SpiceCore::SpiceCore()
 SpiceCore::~SpiceCore()
 {
 
+}    
+
+void SpiceCore::reportErrors(bool rep)
+{
+    report_errors = rep;
 }
 
 void SpiceCore::checkError()
@@ -50,6 +55,14 @@ void SpiceCore::checkError()
 
         getmsg_c("EXPLAIN", lenout, msg);
         std::string short_msg_expl(msg);
+
+        if(report_errors)
+        {
+            std::cout << "Spice ERROR:\n";
+            std::cout << short_msg << "\n";
+            std::cout << short_msg_expl << "\n";
+            std::cout << long_msg << std::endl;
+        }
 
         // reset Spice errors, and throw exception
         reset_c();
@@ -104,7 +117,7 @@ void    SpiceCore::getRelativeGeometricState(int tgt_id, int obs_id, const Ephem
 
 }
 
-void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, ork::vec3d& pos, AberrationCorrection abcorr)
+void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, mork::vec3d& pos, AberrationCorrection abcorr)
 {
     double p[3];
     double lt;

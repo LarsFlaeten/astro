@@ -146,7 +146,7 @@ TEST_F(NumIntTest, RKF78HypAsymptote)
 }
 
 
-void assert_almost_eq(ork::vec3d v1, ork::vec3d v2, double tol)
+void assert_almost_eq(mork::vec3d v1, mork::vec3d v2, double tol)
 {
 
     ASSERT_LT(fabs(v1.x-v2.x), tol);

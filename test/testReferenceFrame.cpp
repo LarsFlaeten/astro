@@ -4,6 +4,8 @@
 
 #include <cmath>
 
+#include <algorithm>
+#include <string>
 
 using namespace astro;
 
@@ -51,8 +53,8 @@ TEST_F(ReferenceFrameTest, InertialFrameTest1)
     astro::ReferenceFrame rf2 = ReferenceFrame::createJ2000();
 
     ASSERT_EQ(rf, rf2);
-    ork::mat3d rrot = rf.getRotation(EphemerisTime(0));
-    ASSERT_EQ(rrot==ork::mat3d::IDENTITY, true);
+    mork::mat3d rrot = rf.getRotation(EphemerisTime(0));
+    ASSERT_EQ(rrot==mork::mat3d::IDENTITY, true);
     ASSERT_EQ(rf.getName(), "J2000");
     ASSERT_EQ(rf.getId(), 1);
 
@@ -126,7 +128,13 @@ TEST_F(ReferenceFrameTest, BodyFixedFrameTest1)
     for(auto i : ids) {
         astro::ReferenceFrame rf2 = ReferenceFrame::createBodyFixedSpice(i);
         //std::cout << "ID: " << i << ", Frame " << rf2.getId() << ": " << rf2.getName() << std::endl;
-
+        
+        
+        // This is some unrelated code to generate a list of planets for the settings files:
+        std::string name = rf2.getName().substr(5);
+        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+        name.insert(0, 1, rf2.getName().substr(4,1)[0]);
+        std::cout << "<celestialObject name=\"" << name << "\" id=\"" << i << "\" parentid=\"" << i/100 << "\"/>" << std::endl;
     }
 }
 
@@ -134,7 +142,7 @@ TEST_F(ReferenceFrameTest, BodyFixedRotationTest1)
 {
     // Calling getRotaion without any kernels loaded should throw exception:
     astro::ReferenceFrame rf_earth = ReferenceFrame::createBodyFixedSpice(399);
-    ork::mat3d tip;
+    mork::mat3d tip;
     ASSERT_THROW(tip = rf_earth.getRotation(EphemerisTime(0)),
            astro::SpiceException);
 
