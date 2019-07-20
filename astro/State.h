@@ -3,6 +3,10 @@
 
 #include <sstream>
 
+#include "ReferenceFrame.h"
+#include "Time.h"
+
+
 // Decided to use mork::math. Other users need to install mork for this to wmork.
 // TODO: Fix dependency in CMakeLists so that this is clear for users
 #include <mork/math/vec3.h>
@@ -61,6 +65,9 @@ public:
         v *= a;
         return *this;
     }
+
+    // Transforms this state between reference frames at the given ET
+    PosState    transform(const ReferenceFrame& fromFr, const ReferenceFrame toFr, const EphemerisTime& et);
 
 };
 
