@@ -62,6 +62,32 @@ TEST_F(ReferenceFrameTest, InertialFrameTest1)
 
 }
 
+TEST_F(ReferenceFrameTest, IsJ2000Test)
+{
+    astro::ReferenceFrame rf1 = ReferenceFrame::createJ2000();
+    astro::ReferenceFrame rf2 = ReferenceFrame::createBodyFixedSpice(3);
+    astro::ReferenceFrame rf3 = ReferenceFrame::createBodyFixedSpice(399);
+    astro::ReferenceFrame rf4 = ReferenceFrame::createBodyFixedSpice(301);
+    astro::ReferenceFrame rf5 = ReferenceFrame::createBodyFixedSpice(5);
+    astro::ReferenceFrame rf6 = ReferenceFrame::createBodyFixedSpice(599);
+
+    std::cout << "Frames:" << std::endl;
+    std::cout << rf1.getName() << std::endl;
+    std::cout << rf2.getName() << std::endl;
+    std::cout << rf3.getName() << std::endl;
+    std::cout << rf4.getName() << std::endl;
+    std::cout << rf5.getName() << std::endl;
+    std::cout << rf6.getName() << std::endl;
+
+    ASSERT_TRUE(rf1.isJ2000());
+    ASSERT_FALSE(rf2.isJ2000());
+    ASSERT_FALSE(rf3.isJ2000());
+    ASSERT_FALSE(rf4.isJ2000());
+    ASSERT_FALSE(rf5.isJ2000());
+    ASSERT_FALSE(rf6.isJ2000());
+}
+
+
 TEST_F(ReferenceFrameTest, InertialFrameTest2)
 {
     // CHeck that a body fixed frame created arouund
