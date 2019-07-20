@@ -51,6 +51,8 @@ public:
     static ReferenceFrame createBodyFixedSpice(int bodyId);
 
 
+    // Returns true of this is the J2000 frame
+    virtual bool isJ2000() const;
 
 protected:
     ReferenceFrameType type;

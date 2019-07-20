@@ -86,6 +86,11 @@ ReferenceFrame  ReferenceFrame::createJ2000() {
     return ref;
 }
 
+bool    ReferenceFrame::isJ2000() const {
+    return (type == Inertial && spiceId == 1 && centerId == 0);
+
+}
+
 ReferenceFrame ReferenceFrame::createBodyFixedSpice(int bodyId) {
     if(bodyId == 0)
         return ReferenceFrame::createJ2000();
@@ -108,8 +113,13 @@ ReferenceFrame ReferenceFrame::createBodyFixedSpice(int bodyId) {
         int found;
         cidfrm_c(bodyId, lenout, &frameId, frameName, &found);
 
-        if(!found)
-            throw std::runtime_error("Cannot create body fixed frame, object id not found");
+        if(!found) {
+            std::stringstream ss;
+            ss << "Cannot create body fixed frame for id " << bodyId << ", object id not found in loaded kernels";
+            
+            throw std::runtime_error(ss.str());
+        
+        }
         ref.spiceName = frameName;
         ref.spiceId = frameId;    
 
