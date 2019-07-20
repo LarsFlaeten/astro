@@ -90,16 +90,16 @@ void    SpiceCore::loadKernel(const std::string& filename)
 
 }
 
-void    SpiceCore::getRelativeGeometricState(int tgt_id, int obs_id, const EphemerisTime& et, astro::PosState& state)
+void    SpiceCore::getRelativeGeometricState(int tgt_id, int obs_id, const EphemerisTime& et, astro::PosState& state, const ReferenceFrame& rf)
 {
     double s[6];
     double lt;
     {
         std::lock_guard<std::mutex> lock(m);
         if(obs_id == 0)
-            spkssb_c(tgt_id, et.getETValue(), "J2000", s);
+            spkssb_c(tgt_id, et.getETValue(), rf.getName().c_str(), s);
         else
-            spkgeo_c(tgt_id, et.getETValue(), "J2000", obs_id, s, &lt);
+            spkgeo_c(tgt_id, et.getETValue(), rf.getName().c_str(), obs_id, s, &lt);
     }
     checkError();
    
@@ -116,8 +116,56 @@ void    SpiceCore::getRelativeGeometricState(int tgt_id, int obs_id, const Ephem
 
 
 }
+    
+void    SpiceCore::getRelativeState(int tgt_id, const Observer& obs, const EphemerisTime& et, astro::PosState& state, AberrationCorrection abcorr) {
+    double s[6];
+    double lt;
+    std::string tgt_id_s = std::to_string(tgt_id);
+    std::string obs_ref_fr_s = obs.getReferenceFrame().getName();
+    std::string ac;
+    getAberrationCode(abcorr, ac);
+    {
+        std::lock_guard<std::mutex> lock(m);
+ 
+        // Get the observer state:
+        PosState obsState = obs.getState();
+        int centerObj = obs.getCenterObject();
+        // Corrrect the state to SSB relative if the RF is J2000 (Since that is how spice works
+        // when using J2000 in geometry calcs (SSB is the center))
+        // In astro, we use the frame for rotation and allow J2000 to be used for other centerObjects
+        // TODO: Clean up in all this, this might get messy....
+        PosState c_state;
+        if(obs.getReferenceFrame().isJ2000() && centerObj != 0) 
+        {
+            spkssb_c(centerObj, et.getETValue(), "J2000", (double*)&c_state);
+            obsState += c_state; 
+            centerObj = 0;
+        }
 
-void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, mork::vec3d& pos, AberrationCorrection abcorr)
+        std::string c_obj_s = std::to_string(centerObj);
+        // We can now use Spices observer state function:
+       
+        // Call spice and assign result to state
+        spkcvo_c(tgt_id_s.c_str(), et.getETValue(), obs_ref_fr_s.c_str(), "OBSERVER",
+            ac.c_str(), &obsState, et.getETValue(), c_obj_s.c_str(), obs_ref_fr_s.c_str(), s, &lt);
+        
+        state.r.x = s[0];
+        state.r.y = s[1];
+        state.r.z = s[2];
+        state.v.x = s[3];
+        state.v.y = s[4];
+        state.v.z = s[5];
+
+
+    }
+    checkError();
+   
+
+
+}
+
+
+void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, mork::vec3d& pos, AberrationCorrection abcorr, const ReferenceFrame& rf)
 {
     double p[3];
     double lt;
@@ -126,7 +174,7 @@ void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTi
     
     {
         std::lock_guard<std::mutex> lock(m);
-        spkezp_c(tgt_id, et.getETValue(), "J2000", ac.c_str(), obs_id, p, &lt);
+        spkezp_c(tgt_id, et.getETValue(), rf.getName().c_str(), ac.c_str(), obs_id, p, &lt);
     }
     checkError();
 
@@ -134,6 +182,14 @@ void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTi
     pos.y = p[1];
     pos.z = p[2];
 }
+
+void    SpiceCore::getRelativePosition(int tgt_id, const Observer& obs, const EphemerisTime& et, mork::vec3d& pos, AberrationCorrection abcorr)
+{
+    PosState tgt_state;
+    getRelativeState(tgt_id, obs, et, tgt_state, abcorr);
+    pos = tgt_state.r;
+}
+
 
 void    SpiceCore::getAberrationCode(AberrationCorrection ac, std::string& code)
 {
@@ -168,6 +224,16 @@ void   SpiceCore::getPlanetaryConstants(int id, const std::string& item, int num
     }
     checkError();
 
+}
+
+void   SpiceCore::getPlanetaryConstants(int id, const std::string& item, double& val)
+{
+    getPlanetaryConstants(id, item, 1, &val);
+}
+
+void   SpiceCore::getPlanetaryConstants(int id, const std::string& item, mork::vec3d& val)
+{
+    getPlanetaryConstants(id, item, 3, &(val.x));
 }
 
 // Prints various information about spice core

@@ -8,6 +8,7 @@
 #include "Exceptions.h"
 #include "Time.h"
 #include "State.h"
+#include "Observer.h"
 
 namespace astro
 {
@@ -47,20 +48,41 @@ public:
     // returns the relative geometric state beween two celestial objects
     // int tgt_id: Target id
     // int obs_id: Observer id
-    // state: State to be written
-    void    getRelativeGeometricState(int tgt_id, int obs_id, const EphemerisTime& et, astro::PosState& state);
+    // state: (out) State to be written
+    void    getRelativeGeometricState(int tgt_id, int obs_id, const EphemerisTime& et, astro::PosState& state, const ReferenceFrame& rf = astro::ReferenceFrame::createJ2000());
 
+    // returns the relative state of a celestial object
+    // relative to an Observer
+    // int tgt_id: Target id
+    // int obs_id: Observer id
+    // state: (out) State to be written
+    // abbcor: The type of aberrationCorrection to perform
+    void    getRelativeState(int tgt_id, const Observer& obs, const EphemerisTime& et, astro::PosState& state, AberrationCorrection abcorr = None);
+
+ 
     // returns the relative geometric position beween two celestial objects,
     // optionally corrected for light time and stellar abboration
     // int tgt_id: Target id
     // int obs_id: Observer id
-    // state: State to be written
-    void    getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, mork::vec3d& pos, AberrationCorrection abcorr = None);
+    // pos: (out) Position to be written
+    void    getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, mork::vec3d& pos, AberrationCorrection abcorr = None, const ReferenceFrame& rf = astro::ReferenceFrame::createJ2000());
+
+    // returns the relative geometric position a of celestial object
+    // relative to an Observer,
+    // optionally corrected for light time and stellar abboration
+    // int tgt_id: Target id
+    // Obervere obs: The Observer
+    // pos: (out) Position to be written
+    void    getRelativePosition(int tgt_id, const Observer& obs, const EphemerisTime& et, mork::vec3d& pos, AberrationCorrection abcorr = None);
 
 
     // Returns a requested constant/constant set from Spice
     // typically "GM", "RADII" etc
     void    getPlanetaryConstants(int id, const std::string& item, int num, double* vals);
+    void    getPlanetaryConstants(int id, const std::string& item, double& val);
+    void    getPlanetaryConstants(int id, const std::string& item, mork::vec3d& val);
+
+
 
 
 
