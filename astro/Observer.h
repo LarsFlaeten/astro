@@ -12,30 +12,30 @@ namespace astro {
     // E.g planet positions relative to a space ship
     class Observer {
         public:
-            Observer(int centerObj, ReferenceFrame refFrame, PosState posState); 
+            Observer(int centerObj, ReferenceFrame refFrame, State state); 
 
-            PosState getState() const;
+            virtual State getState() const;
              
-            ReferenceFrame getReferenceFrame() const;
+            virtual ReferenceFrame getReferenceFrame() const;
 
-            int getCenterObject() const;
+            virtual int getCenterObject() const;
 
-            void    setState(const PosState& state);
+            virtual void    setState(const State& state);
 
             // Sets a new center object for this observer frame
             // If recalcState is set to true, the state of the observer will be recalculated
             // for the new center object
-            void    setCenterObject(int newCenter, bool recalcState = false, const EphemerisTime& et = EphemerisTime(0));
+            virtual void    setCenterObject(int newCenter, bool recalcState = false, const EphemerisTime& et = EphemerisTime(0));
             
-            // Sets a new Reference Frame for this observers rotation
+            // Sets a new Reference Frame for this observers state
             // If recalcState is set to true, the state of the observer will be recalculated
             // for the new frame            
-            void    setReferenceFrame(ReferenceFrame rf, bool recalcState = false, const EphemerisTime& et = EphemerisTime(0));
+            virtual void    setReferenceFrame(ReferenceFrame rf, bool recalcState = false, const EphemerisTime& et = EphemerisTime(0));
 
-        private:
+        protected:
             int centerObj;
             ReferenceFrame refFrame;
-            PosState   posState;
+            State   state;
 
     };
 

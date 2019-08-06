@@ -3,13 +3,13 @@
 
 namespace astro {
 
-    Observer::Observer(int centerObj, ReferenceFrame refFrame, PosState posState)
-       : centerObj(centerObj), refFrame(refFrame), posState(posState)
+    Observer::Observer(int centerObj, ReferenceFrame refFrame, State state)
+       : centerObj(centerObj), refFrame(refFrame), state(state)
     {
     } 
   
-    PosState Observer::getState() const {
-        return posState;
+    State Observer::getState() const {
+        return state;
     }
     
     ReferenceFrame Observer::getReferenceFrame() const {
@@ -20,17 +20,20 @@ namespace astro {
         return centerObj;
     }
     
-    void    Observer::setState(const PosState& state) {
-        posState = state;
+    void    Observer::setState(const State& _state) {
+        state = _state;
     }
             
     void    Observer::setCenterObject(int newCenter, bool recalcState, const EphemerisTime& et) {
+        if(!refFrame.isJ2000())
+            throw std::runtime_error("Change of center object can only be done in J2000 frame");
+
         if(recalcState) {
             // find the vector from the new center to the old:
             PosState c_state;
             Spice().getRelativeGeometricState(newCenter, centerObj, et, c_state, refFrame);
-            posState += c_state; 
-
+            state.P += c_state; 
+            // TODO: Recalc orientation/rotState? Not if frame is J2000
 
         }
         centerObj = newCenter;
@@ -38,8 +41,7 @@ namespace astro {
 
     void    Observer::setReferenceFrame(ReferenceFrame newRF, bool recalcState, const EphemerisTime& et) {
         if(recalcState) {
-            PosState newState = posState.transform(refFrame, newRF, et);
-            posState = newState;
+            state = state.transform(refFrame, newRF, et);
         }                        
 
         refFrame = newRF;
