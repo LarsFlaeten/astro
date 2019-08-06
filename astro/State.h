@@ -20,7 +20,6 @@ using namespace mork;
 namespace astro
 {
 
-
 // The translative state of an object in a given reference frame
 class PosState
     : boost::addable1< PosState ,
@@ -66,9 +65,6 @@ public:
         return *this;
     }
 
-    // Transforms this state between reference frames at the given ET
-    PosState    transform(const ReferenceFrame& fromFr, const ReferenceFrame toFr, const EphemerisTime& et);
-
 };
 
 // only required for steppers with error control
@@ -100,6 +96,7 @@ public:
     RotState(const quatd& _q, const vec3d& _w)
         : q(_q), w(_w)
     {  }
+
 
 /*    RotState(const double val)
         : q(val, val, val, val), w(vec3d(val, val, val))
@@ -143,6 +140,21 @@ public:
 
 
 std::ostream& operator << (std::ostream& os, const astro::RotState& s);
+
+// A state of an object. Fundamentally the state consists of two parts
+// which are uncoupled; the translation (PosState) and the rotation (RotState)
+// The state does not know anyhting about its frame of reference...
+class State {
+    public:
+        State(): P(PosState()), R(RotState()) {}
+        State(const PosState& p, const RotState& r): P(p), R(r) {}
+        PosState    P;
+        RotState    R;
+
+        // Transforms this state between reference frames at the given ET
+        State    transform(const ReferenceFrame& fromFr, const ReferenceFrame toFr, const EphemerisTime& et);
+};
+
 
 
 
