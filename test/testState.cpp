@@ -231,23 +231,23 @@ TEST_F(StateTest, TransformTest1)
     ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/pck/pck00010.tpc"));
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 21:00 UTC");;
 
-    astro::PosState stateShip;
-    stateShip.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    stateShip.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    astro::State stateShip;
+    stateShip.P.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
+    stateShip.P.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::ReferenceFrame rfj2000 = astro::ReferenceFrame::createJ2000();
     astro::ReferenceFrame rfearth = astro::ReferenceFrame::createBodyFixedSpice(399);
 
 
-    astro::PosState newState = stateShip.transform(rfj2000, rfearth, et);
+    astro::State newState = stateShip.transform(rfj2000, rfearth, et);
 
-    std::cout << "Old state (J2000): " << stateShip.r << std::endl;
-    std::cout << "New state (earth): " << newState.r << std::endl;
+    std::cout << "Old state (J2000): " << stateShip.P.r << std::endl;
+    std::cout << "New state (earth): " << newState.P.r << std::endl;
 
-    ASSERT_LT(fabs(stateShip.r.length()- newState.r.length()), 1.0E-10);
+    ASSERT_LT(fabs(stateShip.P.r.length()- newState.P.r.length()), 1.0E-10);
     
-    astro::PosState newState2 = newState.transform(rfearth, rfj2000, et);
-    std::cout << "Old state (j2000): " << newState2.r << std::endl;
+    astro::State newState2 = newState.transform(rfearth, rfj2000, et);
+    std::cout << "Old state (j2000): " << newState2.P.r << std::endl;
 
 
 
