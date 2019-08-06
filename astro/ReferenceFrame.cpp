@@ -12,7 +12,7 @@ ReferenceFrame::~ReferenceFrame() {
 }
 
 
-mork::mat3d  ReferenceFrame::getRotation(const EphemerisTime& et) const {
+mork::mat3d  ReferenceFrame::getRotationToJ2000(const EphemerisTime& et) const {
 
     // If its the J2000, return identity:
     if(this->getType() == ReferenceFrameType::Inertial || this->getType() == ReferenceFrameType::BodyFixedNonRotating)
@@ -85,6 +85,25 @@ ReferenceFrame  ReferenceFrame::createJ2000() {
     ref.centerId = 0; // SSB
     return ref;
 }
+
+ReferenceFrame  ReferenceFrame::fromString(const std::string& name) {
+    
+    // We manually create this frame with name and id,
+    // as spice will return wrong frame when using ref id 0 (it return the old
+    // MARSIAU frame
+    ReferenceFrame ref;
+
+    if(name.compare("J2000") == 0) {
+        ref.type = Inertial;
+        ref.spiceName = "J2000";
+        ref.spiceId = 1;
+        ref.centerId = 0; // SSB
+    } else
+        throw std::runtime_error("Frame name " + name + " is not implemented in fromString() factory");
+
+    return ref;
+}
+
 
 bool    ReferenceFrame::isJ2000() const {
     return (type == Inertial && spiceId == 1 && centerId == 0);

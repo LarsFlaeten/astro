@@ -27,7 +27,7 @@ public:
     // or to transform body fixed coordinates to inertial:
     // r_j2000 = M * r_body. To transform from inertial to body fixed,
     // use M.inverse()
-    virtual mork::mat3d  getRotation(const EphemerisTime& et) const;
+    virtual mork::mat3d  getRotationToJ2000(const EphemerisTime& et) const;
 
     virtual ReferenceFrameType getType() const;
 
@@ -49,6 +49,10 @@ public:
     // For planets and sattelites, this will be a rotating frame
     // For barycenters, it will be a non-rotating frame
     static ReferenceFrame createBodyFixedSpice(int bodyId);
+
+    // Creates frame based on the frame name
+    // currently only implemented for J2000
+    static ReferenceFrame fromString(const std::string& name);
 
 
     // Returns true of this is the J2000 frame
