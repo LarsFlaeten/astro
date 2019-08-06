@@ -87,7 +87,8 @@ PCDM::Result PCDM::doStep(const RotODE& rode, const RotState& rs, const Ephemeri
 
     // (62)
     // Angular velocities at n+1:
-    vec3d wbn12dot = rsn12_dot.w;
+    vec3d wn12dot = rsn12_dot.w;
+    vec3d wbn12dot = transform(qn1_inv, wn12dot, qn1);
     vec3d wbn1 = wbn + wbn12dot*DT;
     // (63)
     // Transform to global frame:
