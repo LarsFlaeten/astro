@@ -278,10 +278,9 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition1)
     // Position of Earth rel to Mars BC
     astro::Spice().getRelativeGeometricState(399, 4, et, stateErMBC);
 
-    astro::PosState stateShip;
-    stateShip.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    stateShip.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
-
+    astro::State stateShip;
+    stateShip.P.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
+    stateShip.P.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::ReferenceFrame fr = astro::ReferenceFrame::createBodyFixedSpice(399);
      
@@ -302,12 +301,13 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition1)
     astro::Spice().getRelativeState(399, obs, et, earthRelState);
     std::cout << "Earth state: " << earthRelState.r << std::endl;
 
-    assert_almost_eq(stateShip.r, -earthRelState.r, 1.0E-10);
-    assert_almost_eq(stateShip.v, -earthRelState.v, 1.0E-10);
+    assert_almost_eq(stateShip.P.r, -earthRelState.r, 1.0E-10);
+    assert_almost_eq(stateShip.P.v, -earthRelState.v, 1.0E-10);
 
 
     // Position of observer relative to Mars in J2000:
-    astro::PosState stateShip2 = earthRelState + stateErMBC;
+    astro::State stateShip2;
+    stateShip2.P = earthRelState + stateErMBC;
     obs.setState(stateShip2);
     obs.setCenterObject(4);
     // Get state of Mars relative to Observer, should be inverse of stateShip:
@@ -317,8 +317,8 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition1)
     std::cout << "Mars state : " << marsRelState.r << std::endl;
 
 
-    assert_almost_eq(stateShip2.r, -marsRelState.r, 1.0E-10);
-    assert_almost_eq(stateShip2.v, -marsRelState.v, 1.0E-10);
+    assert_almost_eq(stateShip2.P.r, -marsRelState.r, 1.0E-10);
+    assert_almost_eq(stateShip2.P.v, -marsRelState.v, 1.0E-10);
 
 
 }
@@ -335,9 +335,9 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition2)
     // Position of Earth rel to Mars BC
     astro::Spice().getRelativeGeometricState(399, 4, et, stateErMBC);
 
-    astro::PosState stateShip;
-    stateShip.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    stateShip.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    astro::State stateShip;
+    stateShip.P.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
+    stateShip.P.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
 
     astro::ReferenceFrame fr = astro::ReferenceFrame::createBodyFixedSpice(399);
@@ -363,7 +363,8 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition2)
 
 
     // Position of observer relative to Mars in J2000:
-    astro::PosState stateShip2 = stateShip + stateErMBC;
+    astro::State stateShip2;
+    stateShip2.P = stateShip.P + stateErMBC;
     obs.setState(stateShip2);
     obs.setCenterObject(4);
     // Get state of Mars relative to Observer:
@@ -407,9 +408,9 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition3)
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
 
 
-    astro::PosState stateShip;
-    stateShip.r = vec3d(0, 0, 0);  //[km]
-    stateShip.v = vec3d(0, 0, 0);      //[km/s]
+    astro::State stateShip;
+    stateShip.P.r = vec3d(0, 0, 0);  //[km]
+    stateShip.P.v = vec3d(0, 0, 0);      //[km/s]
 
 
     astro::ReferenceFrame fr = astro::ReferenceFrame::createBodyFixedSpice(399);
@@ -454,9 +455,9 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateCorrections)
 
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
 
-    astro::PosState stateShip;
-    stateShip.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    stateShip.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    astro::State stateShip;
+    stateShip.P.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
+    stateShip.P.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
 
 
     astro::ReferenceFrame fr = astro::ReferenceFrame::createJ2000();

@@ -128,7 +128,7 @@ void    SpiceCore::getRelativeState(int tgt_id, const Observer& obs, const Ephem
         std::lock_guard<std::mutex> lock(m);
  
         // Get the observer state:
-        PosState obsState = obs.getState();
+        PosState obsState = obs.getState().P;
         int centerObj = obs.getCenterObject();
         // Corrrect the state to SSB relative if the RF is J2000 (Since that is how spice works
         // when using J2000 in geometry calcs (SSB is the center))
