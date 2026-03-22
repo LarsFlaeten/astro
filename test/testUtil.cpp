@@ -267,4 +267,117 @@ TEST_F(UtilTest, TransformTestZP)
     assert_almost_eq(eyp, mork::vec3d(-1.0, 0.0, 0.0), 1.0E-10);
     assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
 }
+TEST_F(UtilTest, TransformTestPrograde)
+{
+    // Body frame
+    mork::vec3d ex = mork::vec3d(1.0, 0.0, 0.0);
+    mork::vec3d ey = mork::vec3d(0.0, 1.0, 0.0);
+    mork::vec3d ez = mork::vec3d(0.0, 0.0, 1.0);
+    
+    mork::vec3d r = mork::vec3d(-1000.0, 0.0, 0.0);
+    mork::vec3d v = mork::vec3d(0.0, -4.0, 0.0);
+
+    // Prograde shuold orient as (-y, x, z);
+    mork::quatd q1(ez, -astro::PIHALF);
+    //std::cout << q1 << std::endl;    
+    mork::quatd q2 = astro::getProgradeOrientation(r, v);
+    //std::cout << q2 << std::endl;    
+ 
+
+    mork::vec3d exp = astro::transform(q1, ex, q1.inverse());
+    mork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
+    mork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
+    assert_almost_eq(exp, mork::vec3d(0.0, -1.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+ 
+    exp = astro::transform(q2, ex, q2.inverse());
+    eyp = astro::transform(q2, ey, q2.inverse());
+    ezp = astro::transform(q2, ez, q2.inverse());
+    assert_almost_eq(exp, mork::vec3d(0.0, -1.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+   
+    mork::mat3d rot = q2.toMat3();
+    mork::mat4d transform(rot);
+
+    exp = transform * ex;
+    eyp = transform * ey;
+    ezp = transform * ez;
+
+    assert_almost_eq(exp, mork::vec3d(0.0, -1.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+ 
+
+
+/*    
+    mork::quatd q1(ez, astro::PIHALF);
+    mork::vec3d exp = astro::transform(q1, ex, q1.inverse());
+    mork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
+    mork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
+    assert_almost_eq(exp, mork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(-1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+*/
+    
+    }
+
+
+TEST_F(UtilTest, TransformTestRetrograde)
+{
+    // Body frame
+    mork::vec3d ex = mork::vec3d(1.0, 0.0, 0.0);
+    mork::vec3d ey = mork::vec3d(0.0, 1.0, 0.0);
+    mork::vec3d ez = mork::vec3d(0.0, 0.0, 1.0);
+    
+    mork::vec3d r = mork::vec3d(-1000.0, 0.0, 0.0);
+    mork::vec3d v = mork::vec3d(0.0, -4.0, 0.0);
+
+    // Retrograde shuold orient as (y, -x, z);
+    mork::quatd q1(ez, astro::PIHALF);
+    //std::cout << q1 << std::endl;    
+    mork::quatd q2 = astro::getRetrogradeOrientation(r, v);
+    //std::cout << q2 << std::endl;    
+ 
+
+    mork::vec3d exp = astro::transform(q1, ex, q1.inverse());
+    mork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
+    mork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
+    assert_almost_eq(exp, mork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(-1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+ 
+    exp = astro::transform(q2, ex, q2.inverse());
+    eyp = astro::transform(q2, ey, q2.inverse());
+    ezp = astro::transform(q2, ez, q2.inverse());
+    assert_almost_eq(exp, mork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(-1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+   
+    mork::mat3d rot = q2.toMat3();
+    mork::mat4d transform(rot);
+
+    exp = transform * ex;
+    eyp = transform * ey;
+    ezp = transform * ez;
+
+    assert_almost_eq(exp, mork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(-1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+ 
+
+
+/*    
+    mork::quatd q1(ez, astro::PIHALF);
+    mork::vec3d exp = astro::transform(q1, ex, q1.inverse());
+    mork::vec3d eyp = astro::transform(q1, ey, q1.inverse());
+    mork::vec3d ezp = astro::transform(q1, ez, q1.inverse());
+    assert_almost_eq(exp, mork::vec3d(0.0, 1.0, 0.0), 1.0E-10);
+    assert_almost_eq(eyp, mork::vec3d(-1.0, 0.0, 0.0), 1.0E-10);
+    assert_almost_eq(ezp, mork::vec3d(0.0, 0.0, 1.0), 1.0E-10);
+*/
+    
+    }
+
 

@@ -4,10 +4,6 @@
 // Utility functions used by many other parts of the library
 
 // We use mork::math
-// Need to have ORK_API defined. This hsould be covered by the overlying application, such as ssim?
-#ifndef ORK_API
-#define ORK_API
-#endif
 #include <mork/math/vec3.h>
 #include <mork/math/quat.h>
 
@@ -51,6 +47,11 @@ namespace astro
     std::ostream& operator << (std::ostream& os, const mork::vec3d& v);
     std::ostream& operator << (std::ostream& os, const mork::quatd& q);
     std::ostream& operator << (std::ostream& os, const mork::mat3d& m);
+
+
+    // Orientation quickies:
+    mork::quatd getProgradeOrientation(const mork::vec3d& pos, const mork::vec3d& velocity);
+    mork::quatd getRetrogradeOrientation(const mork::vec3d& pos, const mork::vec3d& velocity);
  
 }
 

@@ -3,6 +3,8 @@
 // Wrap a lot of the Spice utility functions
 #include <cspice/SpiceUsr.h>
 
+#include <mork/math/mat3.h>
+
 namespace astro
 {
     double  pi()
@@ -68,6 +70,42 @@ namespace astro
             os << "[ " << m[i][0] << ", " << m[i][1] << ", " << m[i][2] << " ]\n";
         return os;
     } 
+
+    mork::quatd getProgradeOrientation(const mork::vec3d& pos, const mork::vec3d& velocity) {
+        mork::vec3d x = velocity.normalize();
+        mork::vec3d y = -pos.normalize();
+        mork::vec3d z = x.crossProduct(y).normalize();
+        // Orthogonalize:
+        y = z.crossProduct(x).normalize();
+       
+        // Go view a rotation moatrix:
+        // TODO: FInd a method of setting the quternion directly from direction basi vectors 
+        mork::mat3d rot3 = mork::mat3d::IDENTITY;
+        
+        rot3.setColumn(0, x);
+        rot3.setColumn(1, y);
+        rot3.setColumn(2, z);
+        
+        return mork::quatd(rot3);
+    }
+
+    mork::quatd getRetrogradeOrientation(const mork::vec3d& pos, const mork::vec3d& velocity) {
+        mork::vec3d x = -velocity.normalize();
+        mork::vec3d y = pos.normalize();
+        mork::vec3d z = x.crossProduct(y).normalize();
+        // Orthogonalize:
+        y = z.crossProduct(x).normalize();
+       
+        // Go view a rotation moatrix:
+        // TODO: FInd a method of setting the quternion directly from direction basi vectors 
+        mork::mat3d rot3 = mork::mat3d::IDENTITY;
+        
+        rot3.setColumn(0, x);
+        rot3.setColumn(1, y);
+        rot3.setColumn(2, z);
+        
+        return mork::quatd(rot3);
+    }
 
 
 
