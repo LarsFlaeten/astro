@@ -64,15 +64,18 @@ jobs:
       uses: actions/cache@v4
       with:
         path: data/spice
-        key: spice-kernels-de430-pck00010-naif0012
+        key: spice-kernels-v4
 
     - name: Download SPICE kernels
-      if: steps.cache-kernels.outputs.cache-hit != 'true'
+      # Always check each file individually so a partial/poisoned cache entry
+      # can never silently leave a kernel missing.
       run: |
         mkdir -p data/spice/lsk data/spice/spk data/spice/pck
-        wget -q -P data/spice/lsk https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/naif0012.tls
-        wget -q -P data/spice/spk https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp
-        wget -q -P data/spice/pck https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc
+        [ -f data/spice/lsk/naif0012.tls ] || wget -nv -P data/spice/lsk https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/naif0012.tls
+        [ -f data/spice/spk/de430.bsp ]    || wget -nv -P data/spice/spk  https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp
+        [ -f data/spice/pck/pck00010.tpc ] || wget -nv -P data/spice/pck  https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc
+        [ -f data/spice/pck/gm_de431.tpc ] || wget -nv -P data/spice/pck  https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/gm_de431.tpc
+        ls -lh data/spice/lsk/ data/spice/spk/ data/spice/pck/
 
     - name: Fix executable permissions
       run: chmod +x build/test/runTests
