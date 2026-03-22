@@ -56,16 +56,21 @@ State State::transform(const ReferenceFrame& fromFr, const ReferenceFrame toFr, 
                 tispm[i][j] = tispm_inv[i][j];
     }
 
-    // TODO: Retrieve angular velocities from the transformation
-    std::cout << "WARNING - State::transform does not currently transform rotations" << std::endl;
-
     double state[6]    = { P.r.x, P.r.y, P.r.z, P.v.x, P.v.y, P.v.z };
     double tr_state[6] = {};
     mxvg_c(tispm, state, 6, 6, tr_state);
 
+    // Transform the rotation state using the 3x3 frame rotation matrix M.
+    // M transforms vectors from the source frame into the destination frame.
+    // For orientation: compose the frame rotation with the body quaternion.
+    // For angular velocity: re-express the same physical vector in new axes.
+    Quat qM = glm::quat_cast(M);
+
     State ret;
     ret.P.r = Vec3(tr_state[0], tr_state[1], tr_state[2]);
     ret.P.v = Vec3(tr_state[3], tr_state[4], tr_state[5]);
+    ret.R.q = glm::normalize(qM * R.q);
+    ret.R.w = M * R.w;
     return ret;
 }
 

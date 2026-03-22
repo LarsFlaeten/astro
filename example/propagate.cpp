@@ -144,7 +144,7 @@ int main(int argc, char **argv)
     {
 
         astro::Propagator<astro::ODE, astro::RKF78> pr(ode);
-        //astro::RKF78::setTolerance(tolerance);
+        astro::RKF78::setTolerance(tolerance);
 
         auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
 

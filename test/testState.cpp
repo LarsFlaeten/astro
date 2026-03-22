@@ -212,9 +212,69 @@ TEST_F(StateTest, TransformTest1)
     
     astro::State newState2 = newState.transform(rfearth, rfj2000, et);
     std::cout << "Old state (j2000): " << newState2.P.r << std::endl;
+}
 
+// Rotation and angular velocity survive a J2000 → earth-fixed → J2000 roundtrip.
+TEST_F(StateTest, TransformRotationRoundtrip)
+{
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/lsk/naif0012.tls"));
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/spk/de430.bsp"));
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/pck/pck00010.tpc"));
 
+    astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 21:00 UTC");
 
+    astro::State ship;
+    ship.P.r = Vec3(-6045.0, -3490.0, 2500.0);
+    ship.P.v = Vec3(-3.457,  6.618,   2.533);
+    ship.R.q = glm::normalize(Quat(1.0, 0.5, 0.3, 0.2));
+    ship.R.w = Vec3(0.01, 0.02, -0.005);
+
+    astro::ReferenceFrame rfj2000 = astro::ReferenceFrame::createJ2000();
+    astro::ReferenceFrame rfearth = astro::ReferenceFrame::createBodyFixedSpice(399);
+
+    astro::State earthState  = ship.transform(rfj2000, rfearth, et);
+    astro::State roundtrip   = earthState.transform(rfearth, rfj2000, et);
+
+    // Position/velocity roundtrip (already tested in TransformTest1; keep here for completeness)
+    ASSERT_LT(glm::length(roundtrip.P.r - ship.P.r), 1.0E-8);
+    ASSERT_LT(glm::length(roundtrip.P.v - ship.P.v), 1.0E-8);
+
+    // Angular velocity roundtrip
+    ASSERT_LT(glm::length(roundtrip.R.w - ship.R.w), 1.0E-8);
+
+    // Quaternion roundtrip: q and -q represent the same rotation
+    double qErr = std::min(glm::length(roundtrip.R.q - ship.R.q),
+                           glm::length(roundtrip.R.q + ship.R.q));
+    ASSERT_LT(qErr, 1.0E-8);
+}
+
+// Orientation must actually change when transforming between rotating frames.
+TEST_F(StateTest, TransformRotationChanges)
+{
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/lsk/naif0012.tls"));
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/spk/de430.bsp"));
+    ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/pck/pck00010.tpc"));
+
+    astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 21:00 UTC");
+
+    astro::State ship;
+    ship.P.r = Vec3(-6045.0, -3490.0, 2500.0);
+    ship.P.v = Vec3(-3.457,  6.618,   2.533);
+    ship.R.q = Quat(1.0, 0.0, 0.0, 0.0);  // identity in J2000
+    ship.R.w = Vec3(0.0, 0.0, 0.1);
+
+    astro::ReferenceFrame rfj2000 = astro::ReferenceFrame::createJ2000();
+    astro::ReferenceFrame rfearth = astro::ReferenceFrame::createBodyFixedSpice(399);
+
+    astro::State earthState = ship.transform(rfj2000, rfearth, et);
+
+    // The earth-fixed frame is rotated relative to J2000 — orientation must differ
+    double qDiff = std::min(glm::length(earthState.R.q - ship.R.q),
+                            glm::length(earthState.R.q + ship.R.q));
+    ASSERT_GT(qDiff, 1.0E-3);
+
+    // Angular velocity direction must also change in the rotating frame
+    ASSERT_GT(glm::length(earthState.R.w - ship.R.w), 1.0E-4);
 }
 
 

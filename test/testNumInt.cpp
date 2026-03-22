@@ -64,23 +64,56 @@ void NumIntTest::TearDown()
 
 TEST_F(NumIntTest, RKF78BenchMarkTest)
 {
+    astro::SimpleOrbit orbit1(oe0);
 
-    astro::SimpleOrbit orbit1(oe0);    
-    
     double DT = 0.1;
 
-    // The time period to integrate	
+    // The time period to integrate
     astro::TimeDelta period(orbit1.getPeriod() * 5000);
     astro::EphemerisTime et1 = et0 + period;
-    
+
     astro::Propagator<astro::ODE, astro::RKF78> pr(ode0);
-    astro::RKF78::setTolerance(1.0E-8);       
+    astro::RKF78::setTolerance(1.0E-8);
 
     auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
+}
 
+// setTolerance affects step count: tighter tolerance → more steps.
+TEST_F(NumIntTest, RKF78ToleranceRespected)
+{
+    astro::SimpleOrbit orbit1(oe0);
+    astro::EphemerisTime et1 = et0 + astro::TimeDelta(orbit1.getPeriod());
+    astro::Propagator<astro::ODE, astro::RKF78> pr(ode0);
 
-    	
+    astro::RKF78::setTolerance(1.0E-6);
+    auto resv_loose = pr.doSteps(state0, et0, et1, astro::TimeDelta(0.1));
 
+    astro::RKF78::setTolerance(1.0E-11);
+    auto resv_tight = pr.doSteps(state0, et0, et1, astro::TimeDelta(0.1));
+
+    ASSERT_GT(resv_tight.size(), resv_loose.size());
+
+    astro::RKF78::setTolerance(1.0E-8); // restore default
+}
+
+// After one full orbital period the propagated state must be close to the initial state.
+TEST_F(NumIntTest, RKF78AccuracyOneOrbit)
+{
+    astro::SimpleOrbit orbit1(oe0);
+    astro::EphemerisTime et1 = et0 + astro::TimeDelta(orbit1.getPeriod());
+
+    astro::Propagator<astro::ODE, astro::RKF78> pr(ode0);
+    astro::RKF78::setTolerance(1.0E-10);
+
+    auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(1.0));
+    const auto& sf = resv.back().s;
+
+    // Position error < 1 m = 0.001 km
+    ASSERT_LT(glm::length(sf.r - state0.r), 0.001);
+    // Velocity error < 1 mm/s = 1e-6 km/s
+    ASSERT_LT(glm::length(sf.v - state0.v), 1.0E-6);
+
+    astro::RKF78::setTolerance(1.0E-8); // restore default
 }
 
 TEST_F(NumIntTest, RKF45BenchMarkTest)
