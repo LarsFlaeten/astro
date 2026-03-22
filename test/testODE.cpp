@@ -1,10 +1,11 @@
-#include "../astro/ODE.cpp"
 
+#include "../astro/ODE.h"
+#include "../astro/State.h"
+#include "../astro/Util.h"
 #include <gtest/gtest.h>
 
 #include <cmath>
 
-using namespace boost::numeric::odeint;
 using namespace astro;
 
 class ODETest : public ::testing::Test {
@@ -31,9 +32,9 @@ protected:
 ODETest::ODETest()
   :  mu_earth(398600.0)
 {
-    astro::Attractor earth = {vec3d::ZERO, mu_earth};
+    astro::Attractor earth = {Vec3(0.0), mu_earth};
     ode0.addAttractor(earth);
-   	
+
 
 
 }
@@ -53,11 +54,11 @@ void ODETest::TearDown()
 
 TEST_F(ODETest, RotODESingularInertia)
 {
-    mork::mat3d I_singular = mork::mat3d::ZERO;
+    Mat3 I_singular = Mat3(0.0);
     RotODE rode;
     ASSERT_THROW(rode.setInertialMatrix(I_singular), astro::AstroException);
 
-    mork::mat3d I_id = mork::mat3d::IDENTITY;
+    Mat3 I_id = Mat3(1.0);
     ASSERT_NO_THROW(rode.setInertialMatrix(I_id));
 
     // Test inertia set in construction of rot ode
@@ -66,6 +67,7 @@ TEST_F(ODETest, RotODESingularInertia)
 
 
 
-    
+
 }
+
 

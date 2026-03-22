@@ -4,7 +4,7 @@ WORK IN PROGRESS!
 
 Astro is a collection of astrodynamics-related classes and helper functions. In addition it wraps some functionality of NAIF's SPICE toolkit, but provides an interface in modern C++ fashion.
 
-Math library is based on the Ork math templates.
+Math library is based on [GLM](https://github.com/g-truc/glm) (OpenGL Mathematics).
 
 Put cspice headers and libcspice.a in `libraries/cspice/` (not included in this repo)
 
@@ -150,3 +150,16 @@ The orbit is shown in the follofing plot:
 
 ![alt text](https://raw.githubusercontent.com/LarsFlaeten/astro/master/web/example3.png "Orbit from example 3 plotted aronud primary (Earth)")
 
+---
+
+## 2026-03-22 — Library overhaul
+
+The library underwent a significant overhaul to prepare it for use as a CMake submodule in a larger spacesim project (Apeiron).
+
+**Math library replaced:** The custom `mork` math library was replaced with [GLM](https://github.com/g-truc/glm) (OpenGL Mathematics). Type aliases are defined in `astro/Math.h`: `Vec3 = glm::dvec3`, `Quat = glm::dquat`, `Mat3 = glm::dmat3`, `Mat4 = glm::dmat4`.
+
+**Boost removed:** All Boost dependencies were eliminated. `boost::operators` was replaced with manually defined arithmetic operators on `PosState`. `boost::numeric::odeint` was replaced with native implementations — the existing RK1–RK4 and RKF45 integrators were kept, and RKF78 was rewritten from scratch using the Fehlberg 7(8) Butcher tableau.
+
+**CMake modernised:** All `CMakeLists.txt` files were rewritten in modern target-based CMake style. GLM is found via `find_package` with a fallback to `FetchContent`. CSPICE is exposed as an imported static library target. Tests and examples are only built when `astro` is the top-level project, making it safe to consume as a submodule.
+
+**Test infrastructure fixed:** Tests no longer include `.cpp` source files directly. Each test file now includes only the relevant headers. The `gtest_discover_tests` working directory is set so that SPICE kernel relative paths resolve correctly under `ctest`.

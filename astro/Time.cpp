@@ -8,8 +8,7 @@
 #include <sstream>
 #include <iostream>
 
-namespace astro
-{
+namespace astro {
 
 
 EphemerisTime::EphemerisTime()

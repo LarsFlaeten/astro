@@ -4,40 +4,33 @@
 #include "State.h"
 #include "Time.h"
 #include "Exceptions.h"
+#include <vector>
 
-#include <mork/math/mat3.h>
-
-namespace astro
-{
+namespace astro {
 
 
 class Attractor
 {
 public:
-    mork::vec3d  p; // Position relative to the frame of reference used
-    double      GM;
+    Vec3   p;  // Position relative to the frame of reference
+    double GM;
 };
-// This is the differential equation for translation. Translation is separated
-// from rotation as these will be integrated separately:
-// - They are not coupled or at least lightly coupled
-// - They wil have very different optimal time steps. E.g. an hyperbolic escape
-//   trajectory from earth with RKF78 will have dt ~ 1.0E6 / 1.0E7 @ SOI, while
-//   rotation may need to be integrated with dt many orders below this
-// - This also allows different propagation regimes, for example numerical integration
-//   for rotations, while using Kepler/conincs for translation.
+
+// Differential equation for translation. Separated from rotation because:
+// - They are largely uncoupled
+// - They have very different optimal time steps
+// - This allows different propagation regimes (e.g. numerical for rotation,
+//   Keplerian for translation)
 class ODE
 {
 public:
     ODE();
     virtual ~ODE();
 
- 
-
-    // The force function which evaluates the given force terms
-    // and returns the derivatives of the state vector given
+    // Evaluates force terms and returns derivatives of the state vector
     PosState rates(const EphemerisTime& et, const PosState& s) const;
 
-    // Essentially same method as rates, but odeint needs it slightly different
+    // Callable interface required by ODE solvers
     virtual void operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et) const;
 
     virtual void addAttractor(const Attractor& a);
@@ -47,43 +40,34 @@ private:
     std::vector<Attractor> attractors;
 };
 
+
 class RotODE
 {
 public:
-    // CTOR
-    // Ib is the inertial matrix
-    // Default is the identity matrix
-    RotODE(const mork::mat3d& Ib = mork::mat3d::IDENTITY);
-
+    // Ib is the inertia matrix in body frame. Default is the identity matrix.
+    explicit RotODE(const Mat3& Ib = Mat3(1.0));
     virtual ~RotODE();
 
-    // The force function for rotations
+    // Force function for rotational dynamics
     RotState rates(const EphemerisTime& et, const RotState& s) const;
-    
-    // Assume constant torque over the time step
-    // TODO: Implement linear varying torque over the time step?
-    // Set global frame torque
-    // (Gravity gradient etc)
-    void setGlobalTorque(const mork::vec3d& t);
 
-    // Set body frame torque
-    // (From thrusters etc)
-    void setBodyTorque(const mork::vec3d& tb);
+    // Set global-frame torque (e.g. gravity gradient)
+    void setGlobalTorque(const Vec3& t);
 
-    // Set the inertial matrix in body frame
-    void setInertialMatrix(const mork::mat3d& Ib);
+    // Set body-frame torque (e.g. thrusters)
+    void setBodyTorque(const Vec3& tb);
+
+    // Set the inertia matrix in body frame
+    void setInertialMatrix(const Mat3& Ib);
 
 private:
-
-    vec3d   t;      // global torque
-    vec3d   t_b;    // body frame torque
-    mat3d   i_b;    // body fram inertal matrix
-    mat3d   i_b_inv;// inverse inertial matrix
-
+    Vec3 t;       // global torque
+    Vec3 t_b;     // body-frame torque
+    Mat3 i_b;     // body-frame inertia matrix
+    Mat3 i_b_inv; // inverse inertia matrix
 };
 
 
-}
-
+} // namespace astro
 
 #endif

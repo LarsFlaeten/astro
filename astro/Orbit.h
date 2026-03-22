@@ -12,8 +12,7 @@
 #include <iostream>
 #include <utility>
 
-namespace astro
-{
+namespace astro {
 
 // The base class off all orbits
 class Orbit

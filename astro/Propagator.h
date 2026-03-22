@@ -7,8 +7,7 @@
 #include "RKF45.h"
 #include "RKF78.h"
 #include "RK1_4.h"
-namespace astro
-{
+namespace astro {
 
 struct SimpleResult
 {

@@ -3,8 +3,7 @@
 
 #include <string>
 
-namespace astro
-{
+namespace astro {
 
 struct TimeDelta
 {

@@ -1,7 +1,6 @@
 #include "Interpolate.h"
 
-namespace astro
-{
+namespace astro {
 
 void   hermite(const PosState& s1, const EphemerisTime& et1, const PosState& s2, const EphemerisTime& et2, const EphemerisTime& etx, PosState& out)
 {

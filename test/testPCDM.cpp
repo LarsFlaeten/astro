@@ -1,12 +1,10 @@
 #include "../astro/State.h"
 #include "../astro/Time.h"
-#include "../astro/PCDM.cpp"
 
 #include <gtest/gtest.h>
 
 #include <cmath>
 
-using namespace boost::numeric::odeint;
 using namespace astro;
 
 

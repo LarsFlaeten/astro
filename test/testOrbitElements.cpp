@@ -2,18 +2,19 @@
 // [1]  Orbital Mechanics for Engineering Students, 2nd Edition, Howard D. Curtis
 
 
-#include "../astro/OrbitElements.cpp"
+#include "../astro/Math.h"
 #include "../astro/State.h"
+#include "../astro/Time.h"
+#include "../astro/Orbit.h"
+#include "../astro/Util.h"
+#include "../astro/SpiceCore.h"
+#include "../astro/Exceptions.h"
 #include <gtest/gtest.h>
 
 #include <cmath>
 
 // Prettyprinters for vectors etc
 //#include "OrkExt.h"
-
-using mork::vec3d;
-using mork::mat3d;
-using mork::mat4d;
 
 using namespace astro;
 
@@ -63,8 +64,8 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromState)
 
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
     // Compare with [1] (Those are quite rounded numbers, so we cant be too accurate)
@@ -95,8 +96,8 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromState2)
 
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     //std::cout << "Input state:" << std::endl;
     //print(state);
@@ -122,32 +123,32 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
 
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);    
-    double v = state.v.length();
-    double r = state.r.length();
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);    
+    double v = glm::length(state.v);
+    double r = glm::length(state.r);
     // Negative mass
     astro::OrbitElements oe;
 	ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, -1000.0), astro::AstroException);
     ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, et, -1000.0), astro::SpiceException);
 
     // Zero velocity
-    state.v = vec3d::ZERO;
+    state.v = Vec3(0.0);
     ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu), astro::AstroException);
     ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, et, mu), astro::SpiceException);
 
     // Zero radius
-    state.v = vec3d(-3.457, 6.618, 2.533);
-    state.r = vec3d::ZERO;
+    state.v = Vec3(-3.457, 6.618, 2.533);
+    state.r = Vec3(0.0);
     ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu), astro::AstroException);
     ASSERT_THROW(oe = astro::OrbitElements::fromStateVectorSpice(state, et, mu), astro::SpiceException);
 
     // circular orbit, incl = 45:
     astro::OrbitElements oe2;
     r = (6378.0 + 400);
-    state.r = vec3d(r, 0.0, 0.0);
+    state.r = Vec3(r, 0.0, 0.0);
     v = 7.66895;
-    state.v = vec3d(0, v/sqrt(2), v/sqrt(2));
+    state.v = Vec3(0, v/sqrt(2), v/sqrt(2));
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     //print(oe);
     ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
@@ -166,9 +167,9 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
       
 	// Elliptic orbit, incl = 45:
     r = (6378.0 + 400);
-    state.r = vec3d(r, 0.0, 0.0);
+    state.r = Vec3(r, 0.0, 0.0);
     v = 7.66895;
-    state.v = vec3d(0, v*1.1/sqrt(2), v*1.1/sqrt(2));
+    state.v = Vec3(0, v*1.1/sqrt(2), v*1.1/sqrt(2));
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     //print(oe);
     ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
@@ -187,9 +188,9 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
  
     // hyperbolic orbit, incl = 45:
     r = (6378.0 + 400);
-    state.r = vec3d(r, 0.0, 0.0);
+    state.r = Vec3(r, 0.0, 0.0);
     v = 7.66895;
-    state.v = vec3d(0, v*1.5/sqrt(2), v*1.5/sqrt(2));
+    state.v = Vec3(0, v*1.5/sqrt(2), v*1.5/sqrt(2));
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     //print(oe);
     ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
@@ -208,8 +209,8 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
  
     // hyperbolic orbit 2, anomaly != 0:
     // From [1], Ex. 4.7:
-    state.r = vec3d(-4040, 4815, 3629);
-    state.v = vec3d(-10.39, -4.772, 1.744);
+    state.r = Vec3(-4040, 4815, 3629);
+    state.v = Vec3(-10.39, -4.772, 1.744);
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     //print(oe);
     ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
@@ -239,7 +240,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
 
 
 	// Equatorial circular orbit
-	state.v = vec3d(0, v, 0);
+	state.v = Vec3(0, v, 0);
 	ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
 	ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
 	//print(oe);
@@ -257,7 +258,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
  
 	// Equatorial elliptic orbit
-	state.v = vec3d(0, v*1.1, 0);
+	state.v = Vec3(0, v*1.1, 0);
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe);
@@ -275,7 +276,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
  
     // Equatorial hyperbolic orbit
-    state.v = vec3d(0, v*1.5, 0);
+    state.v = Vec3(0, v*1.5, 0);
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe);
@@ -294,7 +295,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
  
 
 	// Polar circular orbit
-	state.v = vec3d(0, 0, v);
+	state.v = Vec3(0, 0, v);
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
 	//print(oe);
@@ -312,7 +313,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
  
 	// Polar elliptic orbit
-	state.v = vec3d(0, 0, v*1.1);
+	state.v = Vec3(0, 0, v*1.1);
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe);
@@ -330,7 +331,7 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateCornerCases)
     ASSERT_LT(fabs(oe.n-oe2.n), 0.0001);
  
     // Polar hyperbolic orbit
-    state.v = vec3d(0, 0, v*1.5);
+    state.v = Vec3(0, 0, v*1.5);
     ASSERT_NO_THROW(oe = astro::OrbitElements::fromStateVectorOE(state, et, mu));
     ASSERT_NO_THROW(oe2 = astro::OrbitElements::fromStateVectorSpice(state, et, mu));
     //print(oe);
@@ -361,8 +362,8 @@ TEST_F(OrbitElementsTest, OrbitalElementsFromStateOpt)
 
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe = astro::OrbitElements::fromstateVectorOEOpt(state, mu_earth);
     // Compare with [1] (Those are quite rounded numbers, so we cant be too accurate)
@@ -393,8 +394,8 @@ TEST_F(OrbitElementsTest, OrbitalElementsOEBenchmarkTime)
 {
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe;
     for(auto i = 0; i < 1000000; ++i)
@@ -409,8 +410,8 @@ TEST_F(OrbitElementsTest, OrbitalElementsSpiceBenchmarkTime)
 
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe;
     for(auto i = 0; i < 1000000; ++i)
@@ -427,8 +428,8 @@ TEST_F(OrbitElementsTest, OrbitalElementsOptimizedTime)
 
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe;
     for(auto i = 0; i < 10000000; ++i)
@@ -441,24 +442,24 @@ TEST_F(OrbitElementsTest, OrbitalElementsOptimizedTime)
 
 TEST_F(OrbitElementsTest, OrkRotationTest)
 {
-    vec3d I = vec3d::UNIT_X;
-    vec3d J = vec3d::UNIT_Y;
-    vec3d K = vec3d::UNIT_Z;
+    Vec3 I = Vec3(1,0,0);
+    Vec3 J = Vec3(0,1,0);
+    Vec3 K = Vec3(0,0,1);
 
     // Rotate I 90 degrees about z axis should produce J
-    mat3d Q = mat4d::rotatez(radians(90.0)).mat3x3();
-    vec3d rot = Q * I;
-    ASSERT_LT((rot - J).length(), 1.0E-10);
+    Mat3 Q = Mat3(glm::rotate(glm::dmat4(1.0), glm::radians(90.0), Vec3(0,0,1)));
+    Vec3 rot = Q * I;
+    ASSERT_LT(glm::length(rot - J), 1.0E-10);
 
     // Rotate Z -90 degrees about X should give J
-    Q = mat4d::rotatex(radians(-90.0)).mat3x3();
+    Q = Mat3(glm::rotate(glm::dmat4(1.0), glm::radians(-90.0), Vec3(1,0,0)));
     rot = Q * K;
-    ASSERT_LT((rot - J).length(), 1.0E-10);
+    ASSERT_LT(glm::length(rot - J), 1.0E-10);
 
     // Rotate J 90 degrees about I shuold give K
-    Q = mat4d::rotatex(radians(90.0)).mat3x3();
+    Q = Mat3(glm::rotate(glm::dmat4(1.0), glm::radians(90.0), Vec3(1,0,0)));
     rot = Q * J;
-    ASSERT_LT((rot - K).length(), 1.0E-10);
+    ASSERT_LT(glm::length(rot - K), 1.0E-10);
 
 }
 
@@ -503,8 +504,8 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVector2)
 {
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
 
@@ -586,8 +587,8 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorSpice2)
 {
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorSpice(state, et, mu_earth);
 	//print(oe);
@@ -899,8 +900,8 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorComp)
 {
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe1 = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
 
@@ -968,8 +969,8 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorBenchmarkEllipticOE)
 {
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe1 = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
 
@@ -985,8 +986,8 @@ TEST_F(OrbitElementsTest, OrbitElementsToStateVectorBenchmarkEllipticSpice)
 {
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe1 = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
 
@@ -1060,8 +1061,8 @@ TEST_F(OrbitElementsTest, OrbitPropagationTest1)
 {
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::OrbitElements oe1 = astro::OrbitElements::fromStateVector(state, et, mu_earth);
 
@@ -1127,14 +1128,14 @@ TEST_F(OrbitElementsTest, OrbitPropagationTest1)
     // Propagate the orbit to PE:
     EphemerisTime et_pe(t_pe);
     state1 = oe1.toStateVector(et_pe);
-    double r_pe = state1.r.length();
+    double r_pe = glm::length(state1.r);
     //std::cout << "Radius @ PE: " << r_pe << std::endl;
     ASSERT_LT(fabs(r_pe - oe1.rp), 1.0E-5);
 
     // Propagate the orbit to AP:
     EphemerisTime et_ap(t_ap);
     state1 = oe1.toStateVector(et_ap);
-    double r_ap = state1.r.length();
+    double r_ap = glm::length(state1.r);
     //std::cout << "Radius @ AP: " << r_ap << std::endl;
     ASSERT_LT(fabs(r_ap - oe1.ap), 1.0E-5);
 
@@ -1167,7 +1168,7 @@ TEST_F(OrbitElementsTest, OrbitPropagationTest1)
     ASSERT_LT(fabs(t100-4141), 1.0); // Time at v = 100 deg = 4141s
 
     PosState state35 = oe35.toStateVector(EphemerisTime(4141));
-    double r100 = state35.r.length();
+    double r100 = glm::length(state35.r);
     //std::cout << r100 << std::endl;
     ASSERT_LT(fabs(r100-48497), 6); // Radius at 4141s = 48497 km
     // Note by going throug mean anomaly here, we get some rounding error
@@ -1177,8 +1178,8 @@ TEST_F(OrbitElementsTest, OrbitPropagationTest1)
     // Find posiiton and speed 3 hours later
     double t3h = 4141 + 3*3600;
     state35 = oe35.toStateVector(EphemerisTime(t3h));
-    ASSERT_LT(fabs(state35.r.length()-163180), 6); // Radius 3h later is 163180km
-    ASSERT_LT(fabs(state35.v.length()-10.51), 1.0E-2); // velocity 3h later is 10.51km/s
+    ASSERT_LT(fabs(glm::length(state35.r)-163180), 6); // Radius 3h later is 163180km
+    ASSERT_LT(fabs(glm::length(state35.v)-10.51), 1.0E-2); // velocity 3h later is 10.51km/s
 
     // [1], example 3.1
     EphemerisTime et31(0.0);
@@ -1206,10 +1207,10 @@ TEST_F(OrbitElementsTest, OrbitPropagationTest1)
 TEST_F(OrbitElementsTest, HyperbolicAsymptote)
 {
     astro::PosState s;
-    s.r = vec3d(6378 + 400, 0.0, 0.0);
+    s.r = Vec3(6378 + 400, 0.0, 0.0);
     //double v = 7.66895; // Circular
     double v = 10.84509; // roughly eccentric (to six decimals on e)
-    s.v = vec3d(0, 0, v*1.1);
+    s.v = Vec3(0, 0, v*1.1);
     
 
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(s, et, mu_earth);
@@ -1232,16 +1233,16 @@ TEST_F(OrbitElementsTest, HyperbolicAsymptote)
     // keplerian hyperbolic orbits for long time spans.. We might also
     // get into trouble with pacthed conics method. Will just have to wait and see.
     // Current maxiter is 100, we might have to relax on this..
-    double v_inf = s_inf.v.length();
+    double v_inf = glm::length(s_inf.v);
     ASSERT_LT(fabs(v_inf- astro::hyperbolicExcessVelocity(mu_earth, oe.a)), 0.06);
     
     // asymptotic angles are more easy
     double hyp_asym = astro::hyperbolicAsymptote(oe.e);
-    vec3d v0 = -s.r.normalize();
-    vec3d v1 = s_inf.v.normalize();
-    vec3d v2 = s_inf.r.normalize();
-    double hyp_asym1 = acos(v0.dotproduct(v1)); // Asymptote from velocity
-    double hyp_asym2 = acos(v0.dotproduct(v2)); // Asymptote from position
+    Vec3 v0 = -glm::normalize(s.r);
+    Vec3 v1 = glm::normalize(s_inf.v);
+    Vec3 v2 = glm::normalize(s_inf.r);
+    double hyp_asym1 = acos(glm::dot(v0, v1)); // Asymptote from velocity
+    double hyp_asym2 = acos(glm::dot(v0, v2)); // Asymptote from position
   
     ASSERT_LT(fabs(hyp_asym - hyp_asym1), 0.0005); // 0.03 degrees..
     ASSERT_LT(fabs(hyp_asym - hyp_asym2), 0.02); // 0.03 degrees..

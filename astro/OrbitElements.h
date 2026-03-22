@@ -14,8 +14,7 @@
 #include <iostream>
 #include <utility>
 
-namespace astro
-{
+namespace astro {
 
 const int KEPLER_MAX_ITERATIONS = 100;
 const double KEPLER_TOLERANCE = 1.0E-10;

@@ -1,5 +1,7 @@
 #include "../astro/Util.h"
-#include "../astro/ReferenceFrame.cpp"
+#include "../astro/SpiceCore.h"
+#include "../astro/Time.h"
+#include "../astro/ReferenceFrame.h"
 #include <gtest/gtest.h>
 
 #include <cmath>
@@ -53,8 +55,8 @@ TEST_F(ReferenceFrameTest, InertialFrameTest1)
     astro::ReferenceFrame rf2 = ReferenceFrame::createJ2000();
 
     ASSERT_EQ(rf, rf2);
-    mork::mat3d rrot = rf.getRotationToJ2000(EphemerisTime(0));
-    ASSERT_EQ(rrot==mork::mat3d::IDENTITY, true);
+    Mat3 rrot = rf.getRotationToJ2000(EphemerisTime(0));
+    ASSERT_EQ(rrot==Mat3(1.0), true);
     ASSERT_EQ(rf.getName(), "J2000");
     ASSERT_EQ(rf.getId(), 1);
 
@@ -169,7 +171,7 @@ TEST_F(ReferenceFrameTest, BodyFixedRotationTest1)
     // Removed this test, as the kernel was loade by some other test when runnign all tests
     // Calling getRotaion without any kernels loaded should throw exception:
     astro::ReferenceFrame rf_earth = ReferenceFrame::createBodyFixedSpice(399);
-    mork::mat3d tip;
+    Mat3 tip;
     //ASSERT_THROW(tip = rf_earth.getRotation(EphemerisTime(0)),
     //       astro::SpiceException);
 

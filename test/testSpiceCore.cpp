@@ -1,5 +1,12 @@
-#include "../astro/SpiceCore.cpp"
+#include "../astro/SpiceCore.h"
+#include "../astro/Time.h"
+#include "../astro/State.h"
+#include "../astro/Util.h"
+#include "../astro/ReferenceFrame.h"
+#include "../astro/Observer.h"
 #include <gtest/gtest.h>
+
+using namespace astro;
 
 class SpiceCoreTest : public ::testing::Test {
 
@@ -31,7 +38,8 @@ SpiceCoreTest::~SpiceCoreTest()
 
 void SpiceCoreTest::SetUp()
 {
-
+    astro::Spice().loadKernel("../data/spice/lsk/naif0012.tls");
+    astro::Spice().loadKernel("../data/spice/spk/de430.bsp");
 }
 
 void SpiceCoreTest::TearDown()
@@ -50,9 +58,9 @@ TEST_F(SpiceCoreTest, LoadKernelTest1)
     ASSERT_NO_THROW(astro::Spice().loadKernel("../data/spice/lsk/naif0012.tls"));
 }
 
-void assert_almost_eq(mork::vec3d v1, mork::vec3d v2, double tol);
+void assert_almost_eq(astro::Vec3 v1, astro::Vec3 v2, double tol);
 
-void assert_almost_neq(mork::vec3d v1, mork::vec3d v2, double tol)
+void assert_almost_neq(astro::Vec3 v1, astro::Vec3 v2, double tol)
 {
 
     ASSERT_GT(fabs(v1.x-v2.x), tol);
@@ -78,7 +86,7 @@ TEST_F(SpiceCoreTest, getStateTest1)
     et += astro::TimeDelta(1.0);
     ASSERT_NO_THROW(astro::Spice().getRelativeGeometricState(399,0, et, state2));  
 
-    mork::vec3d diff = state2.r - state1.r;
+    Vec3 diff = state2.r - state1.r;
     assert_almost_eq(diff, state1.v, 1.0E-4);
 
 
@@ -168,7 +176,7 @@ TEST_F(SpiceCoreTest, getPositionTest1)
 
     // Position of earth from SSB
     ASSERT_NO_THROW(astro::Spice().getRelativeGeometricState(399,0, et, state1));  
-    vec3d pos1, pos2, pos3;
+    Vec3 pos1, pos2, pos3;
     ASSERT_NO_THROW(astro::Spice().getRelativePosition(399,0,et, pos1, astro::AberrationCorrection::None));
     assert_almost_eq(state1.r, pos1, 1.0E-10);
 
@@ -203,7 +211,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrNone)
 {
     // Retreive 100000 states:
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
-    mork::vec3d pos;
+    Vec3 pos;
 
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
@@ -217,7 +225,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrLightTime)
 {
     // Retreive 100000 states:
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
-    mork::vec3d pos;
+    Vec3 pos;
 
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
@@ -230,7 +238,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrLightTimeStellar)
 {
     // Retreive 100000 states:
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
-    mork::vec3d pos;
+    Vec3 pos;
 
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
@@ -244,7 +252,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrCNLightTime)
 {
     // Retreive 100000 states:
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
-    mork::vec3d pos;
+    Vec3 pos;
 
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
@@ -257,7 +265,7 @@ TEST_F(SpiceCoreTest, getPositionTestBenchMarkAbCorrCNLightTimeStellar)
 {
     // Retreive 100000 states:
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
-    mork::vec3d pos;
+    Vec3 pos;
 
     for(int i = 0; i < 100000; ++i) {
         et += astro::TimeDelta(1.0);
@@ -279,11 +287,11 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition1)
     astro::Spice().getRelativeGeometricState(399, 4, et, stateErMBC);
 
     astro::State stateShip;
-    stateShip.P.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    stateShip.P.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    stateShip.P.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    stateShip.P.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     astro::ReferenceFrame fr = astro::ReferenceFrame::createBodyFixedSpice(399);
-     
+
     astro::ReferenceFrame fr2 = astro::ReferenceFrame::createBodyFixedSpice(3);
  
     astro::ReferenceFrame fr3 = astro::ReferenceFrame::createBodyFixedSpice(0);
@@ -336,8 +344,8 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition2)
     astro::Spice().getRelativeGeometricState(399, 4, et, stateErMBC);
 
     astro::State stateShip;
-    stateShip.P.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    stateShip.P.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    stateShip.P.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    stateShip.P.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
 
     astro::ReferenceFrame fr = astro::ReferenceFrame::createBodyFixedSpice(399);
@@ -409,8 +417,8 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition3)
 
 
     astro::State stateShip;
-    stateShip.P.r = vec3d(0, 0, 0);  //[km]
-    stateShip.P.v = vec3d(0, 0, 0);      //[km/s]
+    stateShip.P.r = Vec3(0, 0, 0);  //[km]
+    stateShip.P.v = Vec3(0, 0, 0);      //[km/s]
 
 
     astro::ReferenceFrame fr = astro::ReferenceFrame::createBodyFixedSpice(399);
@@ -426,7 +434,7 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition3)
     astro::Spice().getRelativeState(4, obs, et, marsRelState1);
 
     // Use traditional function to retrive state between objects:
-    mork::vec3d pos;
+    Vec3 pos;
     astro::Spice().getRelativePosition(4, obs, et, pos);
 
     assert_almost_eq(pos, marsRelState1.r, 1.0E-10);     
@@ -440,7 +448,7 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateAndPosition3)
     astro::Spice().getRelativeState(4, obs, et, marsRelState2);
     
     assert_almost_neq(marsRelState1.r, marsRelState2.r, 1.0E-10);
-    ASSERT_LT(fabs(marsRelState1.r.length() - marsRelState2.r.length()), 1.0E-10); 
+    ASSERT_LT(fabs(glm::length(marsRelState1.r) - glm::length(marsRelState2.r)), 1.0E-10);
 
     std::cout << "Mars state (J2000)     : " << marsRelState2.r << std::endl;
     std::cout << "Mars state (IAU_EARTH) : " << marsRelState1.r << std::endl;
@@ -456,8 +464,8 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateCorrections)
     astro::EphemerisTime et = astro::EphemerisTime::fromString("2018-06-12 23:00 UTC");;
 
     astro::State stateShip;
-    stateShip.P.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    stateShip.P.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    stateShip.P.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    stateShip.P.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
 
     astro::ReferenceFrame fr = astro::ReferenceFrame::createJ2000();
@@ -476,16 +484,16 @@ TEST_F(SpiceCoreTest, getObserverRelativeStateCorrections)
     astro::PosState marsStateLT;
     astro::Spice().getRelativeState(4, obs, et, marsStateLT, astro::AberrationCorrection::LightTime );
 
-    double A = marsStateNoC.r.length();
-    double B = marsStateLT.r.length();
-    double dotn = marsStateNoC.r.dotproduct(marsStateLT.r) / (A * B);
+    double A = glm::length(marsStateNoC.r);
+    double B = glm::length(marsStateLT.r);
+    double dotn = glm::dot(marsStateNoC.r, marsStateLT.r) / (A * B);
     std::cout << "Mars, LT correction  : " << marsStateLT.r << ", angle: " << acos(dotn)*1000 << " mRad (" << acos(dotn)*180.0*60*60/M_2_PI << " arc s)" << std::endl;
 
    astro::PosState marsStateLTS;
     astro::Spice().getRelativeState(4, obs, et, marsStateLTS, astro::AberrationCorrection::LightTimeStellar );
 
-    double C = marsStateLTS.r.length();
-    dotn = marsStateNoC.r.dotproduct(marsStateLTS.r) / (A * C);
+    double C = glm::length(marsStateLTS.r);
+    dotn = glm::dot(marsStateNoC.r, marsStateLTS.r) / (A * C);
  
     std::cout << "Mars, LTS correction : " << marsStateLTS.r << ", angle: " << acos(dotn)*1000 << " mRad (" << acos(dotn)*180.0*60*60/M_2_PI << " arc s)" << std::endl;
 
@@ -516,7 +524,7 @@ TEST_F(SpiceCoreTest, getPlanetaryConstantsTest)
     ASSERT_GT(radii[2], 0.0);   
 
 
-    mork::vec3d radii2;
+    Vec3 radii2;
     astro::Spice().getPlanetaryConstants(399, "RADII", radii2);
     ASSERT_EQ(radii[0], radii2.x);   
     ASSERT_EQ(radii[1], radii2.y);   

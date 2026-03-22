@@ -2,18 +2,16 @@
 // [1]  Orbital Mechanics for Engineering Students, 2nd Edition, Howard D. Curtis
 
 
-#include "../astro/Orbit.cpp"
 #include "../astro/State.h"
+#include "../astro/Time.h"
+#include "../astro/Orbit.h"
+#include "../astro/Util.h"
 #include <gtest/gtest.h>
 
 #include <cmath>
 
 // Prettyprinters for vectors etc
 //#include "OrkExt.h"
-
-using mork::vec3d;
-using mork::mat3d;
-using mork::mat4d;
 
 using namespace astro;
 
@@ -56,8 +54,8 @@ void OrbitTest::SetUp()
 {
     // [1], Example 4.3:
     astro::PosState   state;
-    state.r = vec3d(-6045.0, -3490.0, 2500.0);  //[km]
-    state.v = vec3d(-3.457, 6.618, 2.533);      //[km/s]
+    state.r = Vec3(-6045.0, -3490.0, 2500.0);  //[km]
+    state.v = Vec3(-3.457, 6.618, 2.533);      //[km/s]
 
     oe_ell = astro::OrbitElements::fromStateVectorOE(state, et, mu_earth);
     

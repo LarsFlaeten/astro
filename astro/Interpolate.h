@@ -4,8 +4,7 @@
 #include "State.h"
 #include "Time.h"
 
-namespace astro
-{
+namespace astro {
 
 
 // Performs a Hermite spline interpolation between state 1 and 2,

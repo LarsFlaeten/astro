@@ -6,8 +6,7 @@
 #include "State.h"
 #include "ODE.h"
 #include "Exceptions.h"
-namespace astro
-{
+namespace astro {
 
 template<int N, typename ODEType, typename StateType>
 class RK

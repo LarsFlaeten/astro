@@ -1,27 +1,54 @@
-project(ASTRO CXX C)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.15)
+project(astro VERSION 0.1.0 LANGUAGES CXX C)
 
-# Avoid source tree pollution
+# Prevent in-source builds
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-	message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
-endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR "In-source builds are not permitted.\n"
+        "  mkdir build && cd build && cmake ..")
+endif()
 
-# Add a sensible build type default and warning because empty means no optimization and no debug info.
-if(NOT CMAKE_BUILD_TYPE)
-	message("WARNING: CMAKE_BUILD_TYPE is not defined!\n         Defaulting to CMAKE_BUILD_TYPE=RelWithDebInfo. Use ccmake to set a proper value.")
-	set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
-endif(NOT CMAKE_BUILD_TYPE)
+# Default build type
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Defaulting to RelWithDebInfo build type.")
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
+endif()
 
-set(LIB_INSTALL_DIR "lib" CACHE STRING "Library directory name (lib/lib32/lib64)" )
+# CSPICE — bundled static library
+add_library(cspice STATIC IMPORTED GLOBAL)
+set_target_properties(cspice PROPERTIES
+    IMPORTED_LOCATION
+        "${CMAKE_CURRENT_SOURCE_DIR}/libraries/cspice/libcspice.a"
+    INTERFACE_INCLUDE_DIRECTORIES
+        "${CMAKE_CURRENT_SOURCE_DIR}/libraries"
+)
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-add_definitions("-fPIC")
+# GLM — prefer system install, fall back to FetchContent.
+# Some system installs create 'glm' instead of 'glm::glm'; normalise to the
+# namespaced form so the rest of the build can always use glm::glm.
+find_package(glm QUIET)
+if(NOT TARGET glm::glm)
+    if(TARGET glm)
+        # Older install without namespace — create an alias
+        add_library(glm::glm ALIAS glm)
+        message(STATUS "GLM found (aliased from 'glm' to 'glm::glm')")
+    else()
+        message(STATUS "GLM not found, fetching via FetchContent")
+        include(FetchContent)
+        FetchContent_Declare(
+            glm
+            GIT_REPOSITORY https://github.com/g-truc/glm.git
+            GIT_TAG        1.0.1
+        )
+        FetchContent_MakeAvailable(glm)
+    endif()
+endif()
 
-enable_testing()
-add_test(NAME       runTests
-         COMMAND    runTests)
-
-# Sub dirs
-add_subdirectory(example)
 add_subdirectory(astro)
-add_subdirectory(test)
+
+# Tests and examples are only built when astro is the top-level project,
+# not when consumed as a submodule.
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    enable_testing()
+    add_subdirectory(test)
+    add_subdirectory(example)
+endif()

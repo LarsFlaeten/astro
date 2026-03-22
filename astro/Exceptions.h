@@ -3,8 +3,7 @@
 
 #include <exception>
 
-namespace astro
-{
+namespace astro {
 
 class AstroException : public std::exception
 {

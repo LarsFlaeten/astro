@@ -1,55 +1,43 @@
+#include <vector>
+
 #include "ODE.h"
 #include "Util.h"
 
 // References:
 // [1]  Spacecraft Attitude Dynamics and Control
-//      Ver 3.0.0, 2008/2009 Giulio Avanzini
+//      Ver 3.0.0, 2008/2009, Giulio Avanzini
 
-namespace astro
-{
+namespace astro {
 
 ODE::ODE()
-{
-
-}
+{}
 
 ODE::~ODE()
-{
-
-}
+{}
 
 PosState ODE::rates(const EphemerisTime& et, const PosState& s) const
 {
     PosState sdot;
-    this->operator()(s, sdot, et);
+    operator()(s, sdot, et);
     return sdot;
-
 }
 
 void ODE::operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et) const
 {
-    // Set r_dot:
-    // Velocities available directly from state
     dxdt.r = x.v;
 
-    // Set v_dot:
-    // Main gravitational force from attractors
-    dxdt.v = mork::vec3d::ZERO;
-    for(const Attractor& a : attractors) {
-        vec3d ac = mork::vec3d::ZERO;
-        vec3d r = x.r - a.p;
-        double R = r.length();    
-        ac = r/pow(R, 3.0);
-        ac *= -a.GM;
-        dxdt.v += ac;
+    dxdt.v = Vec3(0.0);
+    for (const Attractor& a : attractors)
+    {
+        Vec3   r = x.r - a.p;
+        double R = glm::length(r);
+        dxdt.v  += (-a.GM / std::pow(R, 3.0)) * r;
     }
-    // TODO:add other things here:
-    // -Oblateness effect
-    // -Atmospheric drag
-    // -solar radiation drag
-    // -thruster forces
-
-
+    // TODO: add perturbations:
+    // - Oblateness
+    // - Atmospheric drag
+    // - Solar radiation pressure
+    // - Thruster forces
 }
 
 void ODE::addAttractor(const Attractor& a)
@@ -63,38 +51,31 @@ void ODE::clearAttractors()
 }
 
 
-RotODE::RotODE(const mat3d& Ib)
+RotODE::RotODE(const Mat3& Ib)
+    : t(0.0), t_b(0.0)
 {
     setInertialMatrix(Ib);
-    t = mork::vec3d::ZERO;
-    t_b = mork::vec3d::ZERO; 
-
 }
 
 RotODE::~RotODE()
-{
+{}
 
-}
-
-void RotODE::setGlobalTorque(const mork::vec3d& _t)
+void RotODE::setGlobalTorque(const Vec3& _t)
 {
     t = _t;
 }
 
-
-void RotODE::setBodyTorque(const mork::vec3d& _tb)
+void RotODE::setBodyTorque(const Vec3& _tb)
 {
     t_b = _tb;
 }
 
-void RotODE::setInertialMatrix(const mork::mat3d& Ib)
+void RotODE::setInertialMatrix(const Mat3& Ib)
 {
-    if(fabs(Ib.determinant()) < 1.0E-8)
-        throw AstroException("Singular Matrix", "Singular Matrix supplied as inertial matirx to RotODE");
-
-    i_b = Ib;
-    i_b_inv = i_b.inverse();
-
+    if (std::abs(glm::determinant(Ib)) < 1.0E-8)
+        throw AstroException("Singular Matrix", "Singular matrix supplied as inertia matrix to RotODE");
+    i_b     = Ib;
+    i_b_inv = glm::inverse(i_b);
 }
 
 
@@ -102,39 +83,33 @@ RotState RotODE::rates(const EphemerisTime& et, const RotState& rs) const
 {
     RotState rs_dot;
 
-    quatd Q = rs.q;
-    quatd Q_inv = Q.inverse();
-    double q0 = Q.w; // w is the scalar in mork/quatd
-    vec3d q = vec3d(Q.x, Q.y, Q.z);
+    Quat Q     = rs.q;
+    Quat Q_inv = glm::inverse(Q);
+    double q0  = Q.w; // scalar part
+    Vec3   q   = Vec3(Q.x, Q.y, Q.z);
 
-    // Derivative of the quaternion
-    // From [1]
-    vec3d w = rs.w;
-    double q0dot = -0.5*w.dotproduct(q);
-    vec3d qdot = 0.5*(q0*w - w.crossProduct(q));
-    quatd Qdot = quatd(qdot.x, qdot.y, qdot.z, q0dot);
-    rs_dot.q = Qdot;
+    // Quaternion derivative — from [1]
+    Vec3 w       = rs.w;
+    double q0dot = -0.5 * glm::dot(w, q);
+    Vec3   qdot  = 0.5 * (q0 * w - glm::cross(w, q));
+    rs_dot.q = Quat(q0dot, qdot.x, qdot.y, qdot.z);
 
-    // Derivative of w
-    
-    // Transform global frame torque to body frame, and add the two:
-    vec3d tb2 = transform(Q_inv, t, Q); // [1] (56)
-    vec3d tbt = t_b + tb2; // Total body torque
+    // Angular velocity derivative
 
-    // Get w in body frame, wb:
-    vec3d wb = transform(Q_inv, w, Q);
-    
+    // Transform global-frame torque to body frame and sum — [1] eq (56)
+    Vec3 tb2  = transform(Q_inv, t, Q);
+    Vec3 tbt  = t_b + tb2;
 
-    // [1] (4)
-    vec3d Lb_dot = tbt - wb.crossProduct(i_b*wb); 
-    // TODO: For varying I we also need to substract Ib_dot*wb
-    vec3d wbdot = i_b_inv * (Lb_dot /* - i_b_dot*wb*/);
-    vec3d wdot = transform(Q, wbdot, Q_inv);
+    // Angular velocity in body frame
+    Vec3 wb = transform(Q_inv, w, Q);
 
-    rs_dot.w = wdot;
-    
+    // [1] eq (4): L_dot = tau - w × (I * w)
+    // TODO: For time-varying I, subtract I_dot * wb
+    Vec3 Lb_dot = tbt - glm::cross(wb, i_b * wb);
+    Vec3 wbdot  = i_b_inv * Lb_dot;
+    rs_dot.w    = transform(Q, wbdot, Q_inv);
 
     return rs_dot;
 }
 
-}
+} // namespace astro

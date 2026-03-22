@@ -1,4 +1,6 @@
-#include "../astro/Time.cpp"
+#include "../astro/SpiceCore.h"
+#include "../astro/Time.h"
+
 #include <gtest/gtest.h>
 
 #include <cmath>

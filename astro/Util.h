@@ -1,62 +1,47 @@
 #ifndef _ASTRO_UTIL_H
 #define _ASTRO_UTIL_H
 
-// Utility functions used by many other parts of the library
-
-// We use mork::math
-#include <mork/math/vec3.h>
-#include <mork/math/quat.h>
-
-
-
+#include "Math.h"
 #include <sstream>
 
+namespace astro {
+    // Pi and a few derived constants
+    double pi();
+    const double PI       = pi();
+    const double TWOPI    = 2.0 * pi();
+    const double PIHALF   = pi() * 0.5;
 
-namespace astro
-{
-    // Pi function, and a few static variables (no need to evaluate pi every time..)
-    double  pi();
-    const double PI = pi();
-    const double TWOPI = 2.0*pi();
-    const double PIHALF = pi()*0.5;
-
-
-	// Degrees / radians conversion
-	double  degreesPerRadian();
-    double  radiansPerDegree();
+    // Degrees / radians conversion
+    double degreesPerRadian();
+    double radiansPerDegree();
     const double DEGPERRAD = degreesPerRadian();
-    const double RADPERDEG = radiansPerDegree();    
+    const double RADPERDEG = radiansPerDegree();
 
-    // convert to a position from Right Ascension, Declination
-    void    raDecToVec(double range, double ra, double dec, mork::vec3d* res);
+    // Convert to a position from Right Ascension, Declination
+    void raDecToVec(double range, double ra, double dec, Vec3* res);
 
-    // convert from a position to Right Ascension, Declination
-    void    vecToRaDec(const mork::vec3d& pos, double* range, double* ra, double* dec);
+    // Convert from a position to Right Ascension, Declination
+    void vecToRaDec(const Vec3& pos, double* range, double* ra, double* dec);
 
-	//Normalizes any number to an arbitrary range 
-    double wrap( const double value, const double start, const double end ); 
-    
-    // Transforms a vector by a quaternion (and its inverse)
+    // Normalizes any number to an arbitrary range by assuming the range wraps
+    // around when going below min or above max
+    double wrap(double value, double start, double end);
+
+    // Transforms a vector by a quaternion sandwich product: q1 * pure(v) * q2
     // Usage (if Q denotes the orientation of a body):
-    // v_b = transform(Q_inv, v,   Q)
-    // v   = transform(Q,     v_b, Q_inv)
-    mork::vec3d transform(const mork::quatd& q1, const mork::vec3d& v, const mork::quatd& q2);
+    //   v_b = transform(Q_inv, v,   Q)
+    //   v   = transform(Q,     v_b, Q_inv)
+    Vec3 transform(const Quat& q1, const Vec3& v, const Quat& q2);
 
+    // Pretty-printers
+    std::ostream& operator<<(std::ostream& os, const Vec3& v);
+    std::ostream& operator<<(std::ostream& os, const Quat& q);
+    std::ostream& operator<<(std::ostream& os, const Mat3& m);
 
-    // Prettyprinters 
-    std::ostream& operator << (std::ostream& os, const mork::vec3d& v);
-    std::ostream& operator << (std::ostream& os, const mork::quatd& q);
-    std::ostream& operator << (std::ostream& os, const mork::mat3d& m);
+    // Orientation helpers
+    Quat getProgradeOrientation(const Vec3& pos, const Vec3& velocity);
+    Quat getRetrogradeOrientation(const Vec3& pos, const Vec3& velocity);
 
-
-    // Orientation quickies:
-    mork::quatd getProgradeOrientation(const mork::vec3d& pos, const mork::vec3d& velocity);
-    mork::quatd getRetrogradeOrientation(const mork::vec3d& pos, const mork::vec3d& velocity);
- 
-}
-
-
-
-
+} // namespace astro
 
 #endif

@@ -9,16 +9,7 @@
 
 #include <cspice/SpiceUsr.h>
 
-#include <mork/math/vec3.h>
-#include <mork/math/mat3.h>
-#include <mork/math/mat4.h>
-
-using mork::vec3d;
-using mork::mat3d;
-using mork::mat4d;
-
-namespace astro
-{
+namespace astro {
 
 
 Orbit::Orbit()

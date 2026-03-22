@@ -1,128 +1,98 @@
 #include "PCDM.h"
 #include "Util.h"
 
-namespace astro
-{
+namespace astro {
 
 PCDM::Result PCDM::doStep(const RotODE& rode, const RotState& rs, const EphemerisTime& et, const TimeDelta& dt)
 {
-    double et_d = et.getETValue(); 
     double DT = dt.value;
-    
+
     // Rotation at time n
-    quatd qn = rs.q;
-    quatd qn_inv = qn.inverse();
+    Quat qn     = rs.q;
+    Quat qn_inv = glm::inverse(qn);
 
-    // Angular velocity at time n, quaternized
-    quatd q_wn = quatd(rs.w.x, rs.w.y, rs.w.z, 0);
+    // Angular velocity at time n as a pure quaternion (scalar = 0)
+    // GLM dquat(w, x, y, z), so scalar=0 means (0, wx, wy, wz)
+    Quat q_wn = Quat(0.0, rs.w.x, rs.w.y, rs.w.z);
 
-    // Transform angular velocities (and later any global torques) to body fixed:
-    quatd q_wbn = qn_inv*q_wn*qn;
-    vec3d wbn = vec3d(q_wbn.x, q_wbn.y, q_wbn.z); 
-    
-    // Get the derivatives for time/step n:
+    // Transform angular velocities to body frame
+    Quat q_wbn = qn_inv * q_wn * qn;
+    Vec3 wbn   = Vec3(q_wbn.x, q_wbn.y, q_wbn.z);
+
+    // Derivatives at time n
     RotState rsn_dot = rode.rates(et, rs);
 
-    //quatd qn_dot = q_wn*qn;
-    //qn_dot.x *= 0.5;
-    //qn_dot.y *= 0.5;
-    //qn_dot.z *= 0.5;
-    //qn_dot.w *= 0.5;
+    // (57) Angular velocities at n+1/4 and n+1/2
+    Vec3 wndot  = rsn_dot.w;
+    Vec3 wbndot = transform(qn_inv, wndot, qn);
+    Vec3 wbn14  = wbn + 0.25 * wbndot * DT;
+    Vec3 wbn12  = wbn + 0.50 * wbndot * DT;
 
-    //std::cout << qn_dot << std::endl;
+    // (58) Angular velocity in global frame at n+1/4
+    Vec3 wn14 = transform(qn, wbn14, qn_inv);
 
-    // (57)
-    // angular velocities at n+1/4 and n+1/2
-    vec3d wndot = rsn_dot.w;
-
-    // Transform wndot to body coordinates wbndot
-    vec3d wbndot = transform(qn_inv, wndot, qn);
-
-    vec3d wbn14 = wbn + 0.25*wbndot*DT;
-    vec3d wbn12 = wbn + 0.5 *wbndot*DT;
-
-    // (58)
-    // Angular velocity in global frame at n+1/4
-    vec3d wn14 = transform(qn, wbn14, qn_inv);
-
-    // (59)
-    // Calculate predicted q'n12:
-    double wn14_l = wn14.length();
-    double F = wn14_l*DT*0.25;
-    vec3d tmp = wn14*(1.0/wn14_l);
-    tmp *= sin(F);
-    // Add guard against zero angular velocity:
-    if(wn14_l < 1.0E-8)
-    {
+    // (59) Predicted q'_n+1/2
+    double wn14_l = glm::length(wn14);
+    double F      = wn14_l * DT * 0.25;
+    Vec3   tmp    = Vec3(0.0);
+    if (wn14_l >= 1.0E-8)
+        tmp = (wn14 / wn14_l) * std::sin(F);
+    else
         F = 0.0;
-        tmp = vec3d::ZERO;
-    }
-    quatd qprime_n12 = quatd(tmp.x, tmp.y, tmp.z, cos(F))*qn;
-    
-    // (60)
-    vec3d wn12 = transform(qprime_n12, wbn12, qprime_n12.inverse());
+    // GLM dquat(w, x, y, z)
+    Quat qprime_n12 = Quat(std::cos(F), tmp.x, tmp.y, tmp.z) * qn;
 
-    // Intermdiate step, we can now get derivates for n+1/2:
-    // Note: With current implementation of RotODE, the torque is
-    // constant and hence w_dot is roughly constant over the time step
-    // This may change in the future by applying other RotODEs.
+    // (60) Angular velocity in global frame at n+1/2
+    Vec3 wn12 = transform(qprime_n12, wbn12, glm::inverse(qprime_n12));
+
+    // Derivatives at n+1/2
     RotState rprime_n12(qprime_n12, wn12);
-    TimeDelta dt12(0.5*DT);
-    RotState rsn12_dot = rode.rates(et+dt12, rprime_n12);
+    TimeDelta dt12(0.5 * DT);
+    RotState rsn12_dot = rode.rates(et + dt12, rprime_n12);
 
-    // (61)
-    // Calculate q_n+1
-    double wn12_l = wn12.length();
-    F = wn12_l*DT*0.5;
-    tmp = wn12*(1.0/wn12_l);
-    tmp *= sin(F);
-    // Add guard against zero velocity
-    if(wn12_l < 1.0E-8)
-    {
+    // (61) q at n+1
+    double wn12_l = glm::length(wn12);
+    F   = wn12_l * DT * 0.5;
+    tmp = Vec3(0.0);
+    if (wn12_l >= 1.0E-8)
+        tmp = (wn12 / wn12_l) * std::sin(F);
+    else
         F = 0.0;
-        tmp = vec3d::ZERO;
-    }
-    quatd qn1 = quatd(tmp.x, tmp.y, tmp.z, cos(F))*qn;
-    quatd qn1_inv = qn1.inverse();
+    Quat qn1     = Quat(std::cos(F), tmp.x, tmp.y, tmp.z) * qn;
+    Quat qn1_inv = glm::inverse(qn1);
 
-    // (62)
-    // Angular velocities at n+1:
-    vec3d wn12dot = rsn12_dot.w;
-    vec3d wbn12dot = transform(qn1_inv, wn12dot, qn1);
-    vec3d wbn1 = wbn + wbn12dot*DT;
-    // (63)
-    // Transform to global frame:
-    vec3d wn1 = transform(qn1, wbn1, qn1_inv);
+    // (62) Angular velocities at n+1
+    Vec3 wn12dot  = rsn12_dot.w;
+    Vec3 wbn12dot = transform(qn1_inv, wn12dot, qn1);
+    Vec3 wbn1     = wbn + wbn12dot * DT;
+
+    // (63) Transform to global frame
+    Vec3 wn1 = transform(qn1, wbn1, qn1_inv);
 
     Result res;
     res.rs.q = qn1;
-	res.rs.w = wn1;
-    res.et = et + dt; 
+    res.rs.w = wn1;
+    res.et   = et + dt;
     return res;
-
 }
- 
-std::vector<PCDM::Result> PCDM::doSteps(const RotODE& rode, const RotState& rs, const EphemerisTime& et0, const EphemerisTime& et1, const TimeDelta& dt)
+
+std::vector<PCDM::Result> PCDM::doSteps(
+    const RotODE& rode, const RotState& rs,
+    const EphemerisTime& et0, const EphemerisTime& et1,
+    const TimeDelta& dt)
 {
     std::vector<Result> res;
-    // Initial value:
-    res.push_back( PCDM::Result({rs, et0}));
-
+    res.push_back({ rs, et0 });
 
     TimeDelta dti = dt;
-
-    while(res.back().et < et1)
+    while (res.back().et < et1)
     {
         res.push_back(doStep(rode, res.back().rs, res.back().et, dti));
-        
-        if(res.back().et + dti > et1)
+        if (res.back().et + dti > et1)
             dti = et1 - res.back().et;
-         
     }
 
-
-    return std::move(res);
-}            
-
-
+    return res;
 }
+
+} // namespace astro

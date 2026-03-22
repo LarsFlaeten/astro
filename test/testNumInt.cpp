@@ -1,8 +1,6 @@
 #include "../astro/State.h"
 #include "../astro/Time.h"
 #include "../astro/Propagator.h"
-#include "../astro/RKF78.cpp"
-#include "../astro/RKF45.cpp"
 #include "../astro/Orbit.h"
 #include "../astro/ODE.h"
 #include "../astro/PCDM.h"
@@ -11,7 +9,6 @@
 
 #include <cmath>
 
-using namespace boost::numeric::odeint;
 using namespace astro;
 
 class NumIntTest : public ::testing::Test {
@@ -42,11 +39,11 @@ protected:
 NumIntTest::NumIntTest()
   :  et0(0), mu_earth(398600.0)
 {
-    earth = {vec3d::ZERO, mu_earth};
+    earth = {Vec3(0.0), mu_earth};
     ode0.addAttractor(earth);
 
-    state0.r = vec3d(7283.46, 0.0, 0.0);  //[km]
-    state0.v = vec3d(0.0, 58311.7/7283.46, 0.0);      //[km/s]
+    state0.r = Vec3(7283.46, 0.0, 0.0);  //[km]
+    state0.v = Vec3(0.0, 58311.7/7283.46, 0.0);      //[km/s]
 
     oe0 = astro::OrbitElements::fromStateVector(state0, et0, mu_earth);
 
@@ -106,10 +103,10 @@ TEST_F(NumIntTest, RKF45BenchMarkTest)
 TEST_F(NumIntTest, RKF78HypAsymptote)
 {
     astro::PosState s;
-    s.r = vec3d(6378 + 400, 0.0, 0.0);
+    s.r = Vec3(6378 + 400, 0.0, 0.0);
     //double v = 7.66895; // Circular
     double v = 10.84509; // roughly eccentric (to six decimals on e)
-    s.v = vec3d(0, 0, v*1.1);
+    s.v = Vec3(0, 0, v*1.1);
     
 
     astro::OrbitElements oe = astro::OrbitElements::fromStateVectorOE(s, et0, mu_earth);
@@ -129,24 +126,24 @@ TEST_F(NumIntTest, RKF78HypAsymptote)
 
     astro::PosState s_inf = resv.back().s;
 
-    double v_inf = s_inf.v.length();
+    double v_inf = glm::length(s_inf.v);
     ASSERT_LT(fabs(v_inf- astro::hyperbolicExcessVelocity(mu_earth, oe.a)), 0.016);
     
     // asymptotic angles are more easy based on velocity (fast convergence)
     // Position based asymptote is much more slow-convergent (about same as v_inf convergence above)
     double hyp_asym = astro::hyperbolicAsymptote(oe.e);
-    vec3d v0 = -s.r.normalize();
-    vec3d v1 = s_inf.v.normalize();
-    vec3d v2 = s_inf.r.normalize();
-    double hyp_asym1 = acos(v0.dotproduct(v1)); // Asymptote from velocity
-    double hyp_asym2 = acos(v0.dotproduct(v2)); // Asymptote from position
+    Vec3 v0 = -glm::normalize(s.r);
+    Vec3 v1 = glm::normalize(s_inf.v);
+    Vec3 v2 = glm::normalize(s_inf.r);
+    double hyp_asym1 = acos(glm::dot(v0, v1)); // Asymptote from velocity
+    double hyp_asym2 = acos(glm::dot(v0, v2)); // Asymptote from position
   
     ASSERT_LT(fabs(hyp_asym - hyp_asym1), 0.0005); // 0.03 degrees..
     ASSERT_LT(fabs(hyp_asym - hyp_asym2), 0.0032); // 0.2 degrees..
 }
 
 
-void assert_almost_eq(mork::vec3d v1, mork::vec3d v2, double tol)
+void assert_almost_eq(astro::Vec3 v1, astro::Vec3 v2, double tol)
 {
 
     ASSERT_LT(fabs(v1.x-v2.x), tol);
@@ -160,7 +157,7 @@ TEST_F(NumIntTest, PCDMTestConstW)
 {
         double w = 0.1;
         astro::RotState rs;
-        rs.q = quatd(0, 0, 0, 1); // "Unit" quaternion
+        rs.q = Quat(1, 0, 0, 0); // "Unit" quaternion
 
         // The differential equation for rotations:
         astro::RotODE rode;
@@ -177,158 +174,158 @@ TEST_F(NumIntTest, PCDMTestConstW)
         // ---
         // Rotation about positive global X
         // ---
-        rs.w = vec3d(w, 0.0, 0.0); // rotation about global X by 0.1 rad/s
+        rs.w = Vec3(w, 0.0, 0.0); // rotation about global X by 0.1 rad/s
         
         // Do the integration 
         auto resv = astro::PCDM::doSteps(rode, rs, et, et2, dt);
 
         // After this, x will be x, y will be z, and z will be -y.
         // Body vectors
-        vec3d ex = vec3d::UNIT_X;
-        vec3d ey = vec3d::UNIT_Y;
-        vec3d ez = vec3d::UNIT_Z;
+        Vec3 ex = Vec3(1,0,0);
+        Vec3 ey = Vec3(0,1,0);
+        Vec3 ez = Vec3(0,0,1);
 
         // Transformt to global
         ex = resv.back().rs.q * ex;
         ey = resv.back().rs.q * ey;
         ez = resv.back().rs.q * ez;
 
-        assert_almost_eq(ex, vec3d::UNIT_X, 1.0E-10);
-        assert_almost_eq(ey, vec3d::UNIT_Z, 1.0E-10);
-        assert_almost_eq(ez, -1.0*vec3d::UNIT_Y, 1.0E-10);
+        assert_almost_eq(ex, Vec3(1,0,0), 1.0E-10);
+        assert_almost_eq(ey, Vec3(0,0,1), 1.0E-10);
+        assert_almost_eq(ez, -1.0*Vec3(0,1,0), 1.0E-10);
 
         // Lenght of quat should be 1
-        ASSERT_LT(fabs(resv.back().rs.q.length()-1.0), 1.0E-10);
+        ASSERT_LT(fabs(glm::length(resv.back().rs.q)-1.0), 1.0E-10);
 
         // ---
         // Rotation about negative global X
         // ---
-        rs.w = vec3d(-w, 0.0, 0.0); // rotation about global X by 0.1 rad/s
+        rs.w = Vec3(-w, 0.0, 0.0); // rotation about global X by 0.1 rad/s
         
         // Do the integration 
         resv = astro::PCDM::doSteps(rode, rs, et, et2, dt);
 
         // After this, x will be x, y will be -z, and z will be y.
         // body vectors
-        ex = vec3d::UNIT_X;
-        ey = vec3d::UNIT_Y;
-        ez = vec3d::UNIT_Z;
+        ex = Vec3(1,0,0);
+        ey = Vec3(0,1,0);
+        ez = Vec3(0,0,1);
 
         // Transform to global:
         ex = resv.back().rs.q * ex;
         ey = resv.back().rs.q * ey;
         ez = resv.back().rs.q * ez;
 
-        assert_almost_eq(ex, vec3d::UNIT_X, 1.0E-10);
-        assert_almost_eq(ey, -1.0*vec3d::UNIT_Z, 1.0E-10);
-        assert_almost_eq(ez, vec3d::UNIT_Y, 1.0E-10);
+        assert_almost_eq(ex, Vec3(1,0,0), 1.0E-10);
+        assert_almost_eq(ey, -1.0*Vec3(0,0,1), 1.0E-10);
+        assert_almost_eq(ez, Vec3(0,1,0), 1.0E-10);
 
         // Lenght of quat should be 1
-        ASSERT_LT(fabs(resv.back().rs.q.length()-1.0), 1.0E-10);
+        ASSERT_LT(fabs(glm::length(resv.back().rs.q)-1.0), 1.0E-10);
 
         // ---
         // Rotation about positive global y
         // ---
-        rs.w = vec3d(0.0, w, 0.0);
+        rs.w = Vec3(0.0, w, 0.0);
         
         // Do the integration 
         resv = astro::PCDM::doSteps(rode, rs, et, et2, dt);
 
         // After this, x will be -z, y will be y, and z will be x.
         // body vectors
-        ex = vec3d::UNIT_X;
-        ey = vec3d::UNIT_Y;
-        ez = vec3d::UNIT_Z;
+        ex = Vec3(1,0,0);
+        ey = Vec3(0,1,0);
+        ez = Vec3(0,0,1);
 
         // Transform to global:
         ex = resv.back().rs.q * ex;
         ey = resv.back().rs.q * ey;
         ez = resv.back().rs.q * ez;
 
-        assert_almost_eq(ex, -1.0*vec3d::UNIT_Z, 1.0E-10);
-        assert_almost_eq(ey, vec3d::UNIT_Y, 1.0E-10);
-        assert_almost_eq(ez, vec3d::UNIT_X, 1.0E-10);
+        assert_almost_eq(ex, -1.0*Vec3(0,0,1), 1.0E-10);
+        assert_almost_eq(ey, Vec3(0,1,0), 1.0E-10);
+        assert_almost_eq(ez, Vec3(1,0,0), 1.0E-10);
 
         // Lenght of quat should be 1
-        ASSERT_LT(fabs(resv.back().rs.q.length()-1.0), 1.0E-10);
+        ASSERT_LT(fabs(glm::length(resv.back().rs.q)-1.0), 1.0E-10);
 
         // ---
         // Rotation about negative global y
         // ---
-        rs.w = vec3d(0.0, -w, 0.0);
+        rs.w = Vec3(0.0, -w, 0.0);
         
         // Do the integration 
         resv = astro::PCDM::doSteps(rode, rs, et, et2, dt);
 
         // After this, x will be z, y will be y, and z will be -x.
         // body vectors
-        ex = vec3d::UNIT_X;
-        ey = vec3d::UNIT_Y;
-        ez = vec3d::UNIT_Z;
+        ex = Vec3(1,0,0);
+        ey = Vec3(0,1,0);
+        ez = Vec3(0,0,1);
 
         // Transform to global:
         ex = resv.back().rs.q * ex;
         ey = resv.back().rs.q * ey;
         ez = resv.back().rs.q * ez;
 
-        assert_almost_eq(ex, vec3d::UNIT_Z, 1.0E-10);
-        assert_almost_eq(ey, vec3d::UNIT_Y, 1.0E-10);
-        assert_almost_eq(ez, -1.0*vec3d::UNIT_X, 1.0E-10);
+        assert_almost_eq(ex, Vec3(0,0,1), 1.0E-10);
+        assert_almost_eq(ey, Vec3(0,1,0), 1.0E-10);
+        assert_almost_eq(ez, -1.0*Vec3(1,0,0), 1.0E-10);
 
         // Lenght of quat should be 1
-        ASSERT_LT(fabs(resv.back().rs.q.length()-1.0), 1.0E-10);
+        ASSERT_LT(fabs(glm::length(resv.back().rs.q)-1.0), 1.0E-10);
 
         // ---
         // Rotation about positive global z
         // ---
-        rs.w = vec3d(0.0, 0.0, w);
+        rs.w = Vec3(0.0, 0.0, w);
         
         // Do the integration 
         resv = astro::PCDM::doSteps(rode, rs, et, et2, dt);
 
         // After this, x will be y, y will be -x, and z will be z.
         // body vectors
-        ex = vec3d::UNIT_X;
-        ey = vec3d::UNIT_Y;
-        ez = vec3d::UNIT_Z;
+        ex = Vec3(1,0,0);
+        ey = Vec3(0,1,0);
+        ez = Vec3(0,0,1);
 
         // Transform to global:
         ex = resv.back().rs.q * ex;
         ey = resv.back().rs.q * ey;
         ez = resv.back().rs.q * ez;
 
-        assert_almost_eq(ex, vec3d::UNIT_Y, 1.0E-10);
-        assert_almost_eq(ey, -1.0*vec3d::UNIT_X, 1.0E-10);
-        assert_almost_eq(ez, vec3d::UNIT_Z, 1.0E-10);
+        assert_almost_eq(ex, Vec3(0,1,0), 1.0E-10);
+        assert_almost_eq(ey, -1.0*Vec3(1,0,0), 1.0E-10);
+        assert_almost_eq(ez, Vec3(0,0,1), 1.0E-10);
 
         // Lenght of quat should be 1
-        ASSERT_LT(fabs(resv.back().rs.q.length()-1.0), 1.0E-10);
+        ASSERT_LT(fabs(glm::length(resv.back().rs.q)-1.0), 1.0E-10);
 
         // ---
         // Rotation about negative global z
         // ---
-        rs.w = vec3d(0.0, 0.0, -w);
+        rs.w = Vec3(0.0, 0.0, -w);
         
         // Do the integration 
         resv = astro::PCDM::doSteps(rode, rs, et, et2, dt);
 
         // After this, x will be -y, y will be x, and z will be z.
         // body vectors
-        ex = vec3d::UNIT_X;
-        ey = vec3d::UNIT_Y;
-        ez = vec3d::UNIT_Z;
+        ex = Vec3(1,0,0);
+        ey = Vec3(0,1,0);
+        ez = Vec3(0,0,1);
 
         // Transform to global:
         ex = resv.back().rs.q * ex;
         ey = resv.back().rs.q * ey;
         ez = resv.back().rs.q * ez;
 
-        assert_almost_eq(ex, -1.0*vec3d::UNIT_Y, 1.0E-10);
-        assert_almost_eq(ey, vec3d::UNIT_X, 1.0E-10);
-        assert_almost_eq(ez, vec3d::UNIT_Z, 1.0E-10);
+        assert_almost_eq(ex, -1.0*Vec3(0,1,0), 1.0E-10);
+        assert_almost_eq(ey, Vec3(1,0,0), 1.0E-10);
+        assert_almost_eq(ez, Vec3(0,0,1), 1.0E-10);
 
         // Lenght of quat should be 1
-        ASSERT_LT(fabs(resv.back().rs.q.length()-1.0), 1.0E-10);
+        ASSERT_LT(fabs(glm::length(resv.back().rs.q)-1.0), 1.0E-10);
 }
 
 
@@ -337,7 +334,7 @@ TEST_F(NumIntTest, PCDMTestZeroW)
 {
         double w = 0.1;
         astro::RotState rs;
-        rs.q = quatd(0, 0, 0, 1); // "Unit" quaternion
+        rs.q = Quat(1, 0, 0, 0); // "Unit" quaternion
 
         // The differential equation for rotations:
         astro::RotODE rode;
@@ -355,16 +352,16 @@ TEST_F(NumIntTest, PCDMTestZeroW)
         // ---
         // No Rotation should retain orientation
         // ---
-        rs.w = vec3d(0.0, 0.0, 0.0);
+        rs.w = Vec3(0.0, 0.0, 0.0);
         
         // Do the integration 
         auto resv = astro::PCDM::doSteps(rode, rs, et, et2, dt);
 
         // After this, x will be x, y will be y, and z will be z.
         // body vectors
-        vec3d ex = vec3d::UNIT_X;
-        vec3d ey = vec3d::UNIT_Y;
-        vec3d ez = vec3d::UNIT_Z;
+        Vec3 ex = Vec3(1,0,0);
+        Vec3 ey = Vec3(0,1,0);
+        Vec3 ez = Vec3(0,0,1);
 
         std::cout << resv.back().rs.q << std::endl;
 
@@ -373,12 +370,12 @@ TEST_F(NumIntTest, PCDMTestZeroW)
         ey = resv.back().rs.q * ey;
         ez = resv.back().rs.q * ez;
 
-        assert_almost_eq(ex, vec3d::UNIT_X, 1.0E-10);
-        assert_almost_eq(ey, vec3d::UNIT_Y, 1.0E-10);
-        assert_almost_eq(ez, vec3d::UNIT_Z, 1.0E-10);
+        assert_almost_eq(ex, Vec3(1,0,0), 1.0E-10);
+        assert_almost_eq(ey, Vec3(0,1,0), 1.0E-10);
+        assert_almost_eq(ez, Vec3(0,0,1), 1.0E-10);
 
         // Lenght of quat should be 1
-        ASSERT_LT(fabs(resv.back().rs.q.length()-1.0), 1.0E-10);
+        ASSERT_LT(fabs(glm::length(resv.back().rs.q)-1.0), 1.0E-10);
 
 
 }
@@ -388,8 +385,8 @@ TEST_F(NumIntTest, PCDMTestTorqueXP)
 {
         double w = 0.1; // The average angular velocity we want
         astro::RotState rs;
-        rs.q = quatd(0, 0, 0, 1); // "Unit" quaternion
-        rs.w = vec3d(0.0, 0.0, 0.0); // zero angular velocity
+        rs.q = Quat(1, 0, 0, 0); // "Unit" quaternion
+        rs.w = Vec3(0.0, 0.0, 0.0); // zero angular velocity
  
         // The differential equation for rotations:
         astro::RotODE rode;
@@ -400,7 +397,7 @@ TEST_F(NumIntTest, PCDMTestTorqueXP)
         astro::EphemerisTime et2 = et + TimeDelta(T);
         
         //Apply torque
-        rode.setBodyTorque(vec3d(2*w/T, 0, 0));
+        rode.setBodyTorque(Vec3(2*w/T, 0, 0));
 
        
 
@@ -412,18 +409,18 @@ TEST_F(NumIntTest, PCDMTestTorqueXP)
 
         // After this, x will be x, y will be z, and z will be -y.
         // body vectors
-        vec3d ex = vec3d::UNIT_X;
-        vec3d ey = vec3d::UNIT_Y;
-        vec3d ez = vec3d::UNIT_Z;
+        Vec3 ex = Vec3(1,0,0);
+        Vec3 ey = Vec3(0,1,0);
+        Vec3 ez = Vec3(0,0,1);
 
         // Transform to global:
         ex = resv.back().rs.q * ex;
         ey = resv.back().rs.q * ey;
         ez = resv.back().rs.q * ez;
 
-        assert_almost_eq(ex, vec3d::UNIT_X, 1.0E-10);
-        assert_almost_eq(ey, vec3d::UNIT_Z, 1.0E-10);
-        assert_almost_eq(ez, -vec3d::UNIT_Y, 1.0E-10);
+        assert_almost_eq(ex, Vec3(1,0,0), 1.0E-10);
+        assert_almost_eq(ey, Vec3(0,0,1), 1.0E-10);
+        assert_almost_eq(ez, -Vec3(0,1,0), 1.0E-10);
 }
  
 // Application of torque negative x test
@@ -431,8 +428,8 @@ TEST_F(NumIntTest, PCDMTestTorqueXN)
 {
         double w = 0.1; // The average angular velocity we want
         astro::RotState rs;
-        rs.q = quatd(0, 0, 0, 1); // "Unit" quaternion
-        rs.w = vec3d(0.0, 0.0, 0.0); // zero angular velocity
+        rs.q = Quat(1, 0, 0, 0); // "Unit" quaternion
+        rs.w = Vec3(0.0, 0.0, 0.0); // zero angular velocity
  
         // The differential equation for rotations:
         astro::RotODE rode;
@@ -443,7 +440,7 @@ TEST_F(NumIntTest, PCDMTestTorqueXN)
         astro::EphemerisTime et2 = et + TimeDelta(T);
         
         //Apply torque
-        rode.setBodyTorque(vec3d(-2*w/T, 0, 0));
+        rode.setBodyTorque(Vec3(-2*w/T, 0, 0));
 
        
 
@@ -455,17 +452,17 @@ TEST_F(NumIntTest, PCDMTestTorqueXN)
 
         // After this, x will be x, y will be -z, and z will be y.
         // body vectors
-        vec3d ex = vec3d::UNIT_X;
-        vec3d ey = vec3d::UNIT_Y;
-        vec3d ez = vec3d::UNIT_Z;
+        Vec3 ex = Vec3(1,0,0);
+        Vec3 ey = Vec3(0,1,0);
+        Vec3 ez = Vec3(0,0,1);
 
         // Transform to global:
         ex = resv.back().rs.q * ex;
         ey = resv.back().rs.q * ey;
         ez = resv.back().rs.q * ez;
 
-        assert_almost_eq(ex, vec3d::UNIT_X, 1.0E-10);
-        assert_almost_eq(ey, -vec3d::UNIT_Z, 1.0E-10);
-        assert_almost_eq(ez, vec3d::UNIT_Y, 1.0E-10);
+        assert_almost_eq(ex, Vec3(1,0,0), 1.0E-10);
+        assert_almost_eq(ey, -Vec3(0,0,1), 1.0E-10);
+        assert_almost_eq(ez, Vec3(0,1,0), 1.0E-10);
 }
  

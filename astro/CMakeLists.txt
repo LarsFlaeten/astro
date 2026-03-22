@@ -1,44 +1,61 @@
-set(LIBNAME "astro")
-message(STATUS " ***** ASTRO ***** ")
+add_library(astro SHARED
+    State.cpp
+    Time.cpp
+    Util.cpp
+    SpiceCore.cpp
+    ReferenceFrame.cpp
+    Observer.cpp
+    Orbit.cpp
+    OrbitElements.cpp
+    ODE.cpp
+    Interpolate.cpp
+    PCDM.cpp
+    RKF45.cpp
+    RKF78.cpp
+)
 
-# Sources
-include_directories("${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/libraries" )
-file(GLOB SOURCE_FILES *.cpp */*.cpp)
+target_compile_features(astro PUBLIC cxx_std_17)
+target_compile_options(astro PRIVATE -Wall)
 
-# Libraries
-set(SPICE_LIBS cspice)
-#if(UNIX)
-#	set(LIBS ${LIBS} rt)
-#endif(UNIX)
+# Public include path: the parent of this directory, so consumers use
+# #include "astro/State.h". The PRIVATE entry lets our own .cpp files
+# use #include "State.h" without qualification.
+target_include_directories(astro
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
-message(STATUS "Using libs:  " ${LIBS})
-message(STATUS "Include dirs:" ${PROJECT_SOURCE_DIR} ", " ${PROJECT_SOURCE_DIR}/libraries)
+target_link_libraries(astro
+    PUBLIC  glm::glm
+    PRIVATE -Wl,--whole-archive cspice -Wl,--no-whole-archive
+)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17")
-message(STATUS "Using CXX flags: " ${CMAKE_CXX_FLAGS})
-link_directories(${PROJECT_SOURCE_DIR}/libraries ${PROJECT_SOURCE_DIR}/libraries/cspice)
-
-# Static or shared?
-set(LIBTYPE SHARED)
-
-
-# Create a library
-add_library(${LIBNAME} ${LIBTYPE} ${SOURCE_FILES})
-# We link cspice as PRIVATE, so the dependency is not propagated to the executable using this library
-target_link_libraries(${LIBNAME} PRIVATE -Wl,--whole-archive ${SPICE_LIBS} -Wl,--no-whole-archive)
-
-# Adds SO Version and subversion. To be added to ensure ABI/API compatibility.
-#SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES SOVERSION ${ORK_VERSION_MAJOR} VERSION ${ORK_VERSION})
-
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-# Install headers
-#FOREACH(subdir core math render resource scenegraph taskgraph ui util)
-FILE(GLOB include-files *.h)
-INSTALL(FILES ${include-files} DESTINATION include/${LIBNAME})
-#INSTALL(FILES ${include-files} DESTINATION include/ork/${subdir})
-#ENDFOREACH(subdir)
-
-# Install library
-INSTALL(TARGETS ${LIBNAME} LIBRARY DESTINATION ${LIB_INSTALL_DIR} ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-
+# Install
+include(GNUInstallDirs)
+install(TARGETS astro
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(FILES
+    Exceptions.h
+    Math.h
+    State.h
+    Time.h
+    Util.h
+    SpiceCore.h
+    ReferenceFrame.h
+    Observer.h
+    Orbit.h
+    OrbitElements.h
+    ODE.h
+    Interpolate.h
+    PCDM.h
+    Propagator.h
+    RK1_4.h
+    RKF45.h
+    RKF78.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/astro
+)

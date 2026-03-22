@@ -6,8 +6,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace astro
-{
+namespace astro {
 
 const std::vector<double> RKF45::a = {0, 1./4., 3./8., 12./13., 1., 1./2.};
 
@@ -56,8 +55,8 @@ RKF45::Result RKF45::doStep(const ODE& ode, const PosState& s, const EphemerisTi
 
     // Compute maximum truncation error:
     astro::PosState te;
-    te.r = vec3d::ZERO;
-    te.v = vec3d::ZERO;
+    te.r = Vec3(0.0);
+    te.v = Vec3(0.0);
     for(int i = 0; i < 6; ++i)
     {
         

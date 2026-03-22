@@ -1,10 +1,11 @@
+#include <iostream>
+
 #include "SpiceCore.h"
 #include "Exceptions.h"
 
 #include <cspice/SpiceUsr.h>
 
-namespace astro
-{
+namespace astro {
 
 // Singleton acces to SpiceCore:
 SpiceCore&  Spice()
@@ -165,7 +166,7 @@ void    SpiceCore::getRelativeState(int tgt_id, const Observer& obs, const Ephem
 }
 
 
-void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, mork::vec3d& pos, AberrationCorrection abcorr, const ReferenceFrame& rf)
+void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTime& et, Vec3& pos, AberrationCorrection abcorr, const ReferenceFrame& rf)
 {
     double p[3];
     double lt;
@@ -183,7 +184,7 @@ void    SpiceCore::getRelativePosition(int tgt_id, int obs_id, const EphemerisTi
     pos.z = p[2];
 }
 
-void    SpiceCore::getRelativePosition(int tgt_id, const Observer& obs, const EphemerisTime& et, mork::vec3d& pos, AberrationCorrection abcorr)
+void    SpiceCore::getRelativePosition(int tgt_id, const Observer& obs, const EphemerisTime& et, Vec3& pos, AberrationCorrection abcorr)
 {
     PosState tgt_state;
     getRelativeState(tgt_id, obs, et, tgt_state, abcorr);
@@ -231,7 +232,7 @@ void   SpiceCore::getPlanetaryConstants(int id, const std::string& item, double&
     getPlanetaryConstants(id, item, 1, &val);
 }
 
-void   SpiceCore::getPlanetaryConstants(int id, const std::string& item, mork::vec3d& val)
+void   SpiceCore::getPlanetaryConstants(int id, const std::string& item, Vec3& val)
 {
     getPlanetaryConstants(id, item, 3, &(val.x));
 }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <limits>
 
 #include <cxxopts.hpp>
 
@@ -101,8 +102,8 @@ int main(int argc, char **argv)
    	// Roughly same orbit as 2&3, but with zero inclination,
 	// and mean anomaly at epoch at periapsis
 	astro::PosState   state0;
-    state0.r = vec3d(7283.46, 0.0, 0.0);  //[km]
-    state0.v = vec3d(0.0, 58311.7/7283.46, 0.0);      //[km/s]
+    state0.r = astro::Vec3(7283.46, 0.0, 0.0);          // [km]
+    state0.v = astro::Vec3(0.0, 58311.7/7283.46, 0.0); // [km/s]
 
     astro::EphemerisTime et0(0); // et = 0 represents the J2000 epoch
     double mu_earth = 398600.0;
@@ -112,7 +113,7 @@ int main(int argc, char **argv)
     astro::SimpleOrbit orbit1(oe0);    
    	
     // The differential equation
-    astro::Attractor a = {vec3d::ZERO, mu_earth};
+    astro::Attractor a = {astro::Vec3(0.0), mu_earth};
     astro::ODE ode;
     ode.addAttractor(a);
 
@@ -217,40 +218,21 @@ int main(int argc, char **argv)
                 res.s.r.x << "\t" << res.s.r.y << "\t" << res.s.r.z << "\t" <<
                 res.s.v.x << "\t" << res.s.v.y << "\t" << res.s.v.z << std::endl;
     } 
-    // Test of ODEints implementation.
     else if(method.compare("RK4O")==0)
     {
-        runge_kutta4< astro::PosState, double, astro::PosState, double, vector_space_algebra > rk4;
-        astro::PosState s = state0;
+        // Fixed-step RK4 using our native implementation
+        astro::Propagator<astro::ODE, astro::RK<4, astro::ODE, astro::PosState>> pr(ode);
+        auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
+
+        for(auto res : resv)
+            oes.push_back(astro::OrbitElements::fromStateVector(res.s, res.et, mu_earth));
+
         if(p_sta)
-            std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << et0.getETValue() << "\t" << 
-            s.r.x << "\t" << s.r.y << "\t" << s.r.z << "\t" <<
-            s.v.x << "\t" << s.v.y << "\t" << s.v.z << std::endl;
-        
-        astro::EphemerisTime et = et0;
-        while(et < et1)
-        {
-            DT = std::min(DT, (et1 - et).value);
-            
-            rk4.do_step(ode, s, et.getETValue(), DT);
-            et += DT;
-    
-            if(p_sta)
-                std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << et.getETValue() << "\t" << 
-                s.r.x << "\t" << s.r.y << "\t" << s.r.z << "\t" <<
-                s.v.x << "\t" << s.v.y << "\t" << s.v.z << std::endl;
-        } 
-        //auto resv = pr.doSteps(state0, et0, et1, astro::TimeDelta(DT));
-
-        //for( auto res : resv)
-        //    oes.push_back(astro::OrbitElements::fromStateVector(res.s, res.et, mu_earth));    
-
-        //if(p_sta)
-        //    for(auto res : resv)
-        //        std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << res.et.getETValue() << "\t" << 
-        //        res.s.r.x << "\t" << res.s.r.y << "\t" << res.s.r.z << "\t" <<
-        //        res.s.v.x << "\t" << res.s.v.y << "\t" << res.s.v.z << std::endl;
-    } 
+            for(auto res : resv)
+                std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << res.et.getETValue() << "\t" <<
+                res.s.r.x << "\t" << res.s.r.y << "\t" << res.s.r.z << "\t" <<
+                res.s.v.x << "\t" << res.s.v.y << "\t" << res.s.v.z << std::endl;
+    }
     else
     {
         std::cout << "Unkown method. Valid methods are RKF45" << std::endl;

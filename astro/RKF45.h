@@ -5,8 +5,7 @@
 #include "Time.h"
 #include "State.h"
 #include "ODE.h"
-namespace astro
-{
+namespace astro {
 
 class RKF45
 {

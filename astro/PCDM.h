@@ -7,8 +7,7 @@
 #include "ODE.h"
 
 
-namespace astro
-{
+namespace astro {
 
 // Implementation of the Predictor-Corrector Direct Multiplication algorithm
 // by Zhao/van Wachem for numerical integration of rotation ODEs with quternions
