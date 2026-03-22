@@ -6,9 +6,58 @@ Astro is a collection of astrodynamics-related classes and helper functions. In 
 
 Math library is based on [GLM](https://github.com/g-truc/glm) (OpenGL Mathematics).
 
-Put cspice headers and libcspice.a in `libraries/cspice/` (not included in this repo)
-
 An example app shows some of the functionality. The test cases also shows a lot of the functionality of the toolbox.
+
+# Setup
+
+## SPICE toolkit
+
+The NAIF CSPICE toolkit is **not included in this repository** (the `libraries/` directory is gitignored). You must obtain it separately and place it in the right location before building.
+
+**1. Download CSPICE**
+
+Get the PC/Linux/GCC 64-bit package from NAIF:
+
+```
+https://naif.jpl.nasa.gov/naif/toolkit_C_PC_Linux_GCC_64bit.html
+```
+
+The current version used by this project is **N0067 (January 2022)**. Download `cspice.tar.Z`.
+
+**2. Extract and copy files**
+
+```bash
+mkdir -p libraries/cspice
+uncompress -c cspice.tar.Z | tar -x
+cp cspice/include/*.h libraries/cspice/
+cp cspice/lib/cspice.a libraries/cspice/libcspice.a
+```
+
+The expected layout is:
+
+```
+libraries/
+└── cspice/
+    ├── libcspice.a
+    ├── SpiceUsr.h
+    └── ... (all other SPICE headers)
+```
+
+**3. SPICE kernel files**
+
+SPICE kernels (ephemeris, orientation, leap-second data) are also gitignored. The tests and examples expect them under `data/spice/`:
+
+```
+data/
+└── spice/
+    ├── lsk/   naif0012.tls   (leap seconds — download from NAIF generic_kernels/lsk/)
+    ├── spk/   de430.bsp      (planetary ephemeris — download from NAIF generic_kernels/spk/planets/)
+    └── pck/   pck00010.tpc   (planetary constants/orientations — download from NAIF generic_kernels/pck/)
+```
+
+All three kernel types are available from: `https://naif.jpl.nasa.gov/pub/naif/generic_kernels/`
+
+Newer kernel files are drop-in compatible. For example, `de440.bsp` and `pck00011.tpc` can be used in place of the above without any code changes — just update the `loadKernel()` paths in your application.
 
 # Examples
 
