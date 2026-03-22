@@ -55,6 +55,7 @@ data/
     ├── lsk/   naif0012.tls   (leap seconds — download from NAIF generic_kernels/lsk/)
     ├── spk/   de430.bsp      (planetary ephemeris — download from NAIF generic_kernels/spk/planets/)
     └── pck/   pck00010.tpc   (planetary constants/orientations — download from NAIF generic_kernels/pck/)
+               gm_de431.tpc   (planetary GM values — download from NAIF generic_kernels/pck/)
 ```
 
 All three kernel types are available from: `https://naif.jpl.nasa.gov/pub/naif/generic_kernels/`
