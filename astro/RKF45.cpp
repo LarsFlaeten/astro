@@ -130,7 +130,7 @@ std::vector<RKF45::Result> RKF45::doSteps(const ODE& ode, const PosState& s, con
     }
 
 
-    return std::move(res);
+    return res;
 }            
 
 
