@@ -1,5 +1,7 @@
 # astro - An astrodynamics toolbox
 
+[![CI](https://github.com/LarsFlaeten/astro/actions/workflows/ci.yml/badge.svg)](https://github.com/LarsFlaeten/astro/actions/workflows/ci.yml)
+
 WORK IN PROGRESS!
 
 Astro is a collection of astrodynamics-related classes and helper functions. In addition it wraps some functionality of NAIF's SPICE toolkit, but provides an interface in modern C++ fashion.

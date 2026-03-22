@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install build tools
+      run: sudo apt-get update && sudo apt-get install -y cmake build-essential ncompress
+
+    - name: Cache CSPICE
+      id: cache-cspice
+      uses: actions/cache@v4
+      with:
+        path: libraries/cspice
+        key: cspice-N0067
+
+    - name: Download and install CSPICE N0067
+      if: steps.cache-cspice.outputs.cache-hit != 'true'
+      run: |
+        wget -q https://naif.jpl.nasa.gov/pub/naif/toolkit//C/PC_Linux_GCC_64bit/packages/cspice.tar.Z
+        mkdir -p libraries/cspice
+        uncompress -c cspice.tar.Z | tar -x
+        cp cspice/include/*.h libraries/cspice/
+        cp cspice/lib/cspice.a libraries/cspice/libcspice.a
+        rm -rf cspice cspice.tar.Z
+
+    - name: Cache SPICE kernels
+      id: cache-kernels
+      uses: actions/cache@v4
+      with:
+        path: data/spice
+        key: spice-kernels-de430-pck00010-naif0012
+
+    - name: Download SPICE kernels
+      if: steps.cache-kernels.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p data/spice/lsk data/spice/spk data/spice/pck
+        wget -q -P data/spice/lsk https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/naif0012.tls
+        wget -q -P data/spice/spk https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp
+        wget -q -P data/spice/pck https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc
+
+    - name: Configure
+      run: cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+    - name: Build
+      run: cmake --build build --parallel
+
+    - name: Test
+      run: ctest --test-dir build --output-on-failure
