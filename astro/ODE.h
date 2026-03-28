@@ -36,8 +36,21 @@ public:
     virtual void addAttractor(const Attractor& a);
     virtual void clearAttractors();
 
+    // Set spacecraft mass (kg). Required when a non-zero force is applied.
+    void setMass(double mass_kg);
+
+    // Set thrust force already expressed in the inertial frame (N).
+    // Applied as f/m acceleration each integration step.
+    void setForce(const Vec3& f_inertial);
+
+    // Convenience: set thrust in body frame + attitude quaternion.
+    // The quaternion rotates body→inertial (i.e. the spacecraft attitude).
+    void setBodyForce(const Vec3& f_body, const Quat& attitude);
+
 private:
     std::vector<Attractor> attractors;
+    double m_mass  = 1.0;   // kg
+    Vec3   m_force = Vec3(0.0); // body-frame force (N)
 };
 
 

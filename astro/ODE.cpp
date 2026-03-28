@@ -33,11 +33,15 @@ void ODE::operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et)
         double R = glm::length(r);
         dxdt.v  += (-a.GM / std::pow(R, 3.0)) * r;
     }
+
+    // Applied force (thruster or other non-gravitational force).
+    // Use setForce() or setBodyForce() to set; zero by default.
+    dxdt.v += m_force / m_mass;
+
     // TODO: add perturbations:
-    // - Oblateness
+    // - Oblateness (J2 and higher zonal harmonics)
     // - Atmospheric drag
     // - Solar radiation pressure
-    // - Thruster forces
 }
 
 void ODE::addAttractor(const Attractor& a)
@@ -48,6 +52,23 @@ void ODE::addAttractor(const Attractor& a)
 void ODE::clearAttractors()
 {
     attractors.clear();
+}
+
+void ODE::setMass(double mass_kg)
+{
+    m_mass = mass_kg;
+}
+
+void ODE::setForce(const Vec3& f_inertial)
+{
+    m_force = f_inertial;
+}
+
+void ODE::setBodyForce(const Vec3& f_body, const Quat& attitude)
+{
+    // Rotate body-frame force to inertial frame.
+    // attitude rotates body→inertial: v_inertial = attitude * v_body * conj(attitude)
+    m_force = transform(attitude, f_body, glm::inverse(attitude));
 }
 
 
