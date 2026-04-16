@@ -29,9 +29,23 @@ void ODE::operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et)
     dxdt.v = Vec3(0.0);
     for (const Attractor& a : attractors)
     {
+        // Direct gravitational acceleration toward attractor.
         Vec3   r = x.r - a.p;
         double R = glm::length(r);
         dxdt.v  += (-a.GM / std::pow(R, 3.0)) * r;
+
+        // Tidal (indirect) correction: when integrating in a non-inertial
+        // geocentric frame, the reference body (Earth) is itself accelerated
+        // toward every third body.  Subtracting that acceleration from the
+        // spacecraft cancels the spurious drift and leaves only the true
+        // differential tidal force.
+        //   a_tidal = a_direct - GM_i * p_i / |p_i|³
+        if (a.tidal)
+        {
+            double Rref = glm::length(a.p);
+            if (Rref > 1.0)                  // guard: skip if attractor is at origin
+                dxdt.v -= (a.GM / std::pow(Rref, 3.0)) * a.p;
+        }
     }
 
     // Applied force (thruster or other non-gravitational force).

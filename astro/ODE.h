@@ -12,8 +12,15 @@ namespace astro {
 class Attractor
 {
 public:
-    Vec3   p;  // Position relative to the frame of reference
+    Vec3   p;      // Position relative to the frame of reference
     double GM;
+    // When true the indirect (tidal) correction is applied:
+    //   a += GM * p / |p|³
+    // This is required for any body that is NOT the central reference body
+    // (e.g. the Sun or Moon when integrating in a geocentric frame) so that
+    // only the differential tidal force perturbs the orbit rather than the
+    // full gravitational pull.
+    bool   tidal = false;
 };
 
 // Differential equation for translation. Separated from rotation because:
