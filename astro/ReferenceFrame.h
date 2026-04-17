@@ -40,6 +40,10 @@ public:
     // Creates a J2000 inertial frame (same as ICRF)
     static ReferenceFrame createJ2000();
 
+    // Creates an ECLIPJ2000 inertial frame (ecliptic plane at J2000.0 epoch).
+    // Use this for any integration or query in the ecliptic frame.
+    static ReferenceFrame createEclipJ2000();
+
     // Creates a body-fixed frame with bodyId as center object.
     // For planets and satellites this is a rotating frame;
     // for barycenters it is non-rotating.

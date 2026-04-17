@@ -75,6 +75,16 @@ ReferenceFrame ReferenceFrame::createJ2000()
     return ref;
 }
 
+ReferenceFrame ReferenceFrame::createEclipJ2000()
+{
+    ReferenceFrame ref;
+    ref.type      = Inertial;
+    ref.spiceName = "ECLIPJ2000";
+    ref.spiceId   = 17;  // SPICE built-in frame ID for ECLIPJ2000
+    ref.centerId  = 0;   // SSB
+    return ref;
+}
+
 ReferenceFrame ReferenceFrame::fromString(const std::string& name)
 {
     if (name == "J2000")
