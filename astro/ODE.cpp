@@ -34,17 +34,19 @@ void ODE::operator()(const PosState& x, PosState& dxdt, const EphemerisTime& et)
         double R = glm::length(r);
         dxdt.v  += (-a.GM / std::pow(R, 3.0)) * r;
 
-        // Tidal (indirect) correction: when integrating in a non-inertial
-        // geocentric frame, the reference body (Earth) is itself accelerated
-        // toward every third body.  Subtracting that acceleration from the
-        // spacecraft cancels the spurious drift and leaves only the true
-        // differential tidal force.
-        //   a_tidal = a_direct - GM_i * p_i / |p_i|³
+        // Tidal (indirect) correction: subtract the dominant body's acceleration
+        // toward this attractor so that only the differential tidal force remains.
+        //   a_correction = GM_i * (p_i - p_ref) / |p_i - p_ref|³
+        // where p_ref is the dominant body's ECI position (set per-frame from
+        // main.cpp so it tracks whichever body we're orbiting — Earth, Mars, …).
+        // Using the wrong p_ref (e.g. Earth when near Mars) leaves a large
+        // uncanceled residual that decays the orbit each pass.
         if (a.tidal)
         {
-            double Rref = glm::length(a.p);
-            if (Rref > 1.0)                  // guard: skip if attractor is at origin
-                dxdt.v -= (a.GM / std::pow(Rref, 3.0)) * a.p;
+            Vec3   rref  = a.p - a.tidalRefPos;   // vector from dominant body to this attractor
+            double Rref  = glm::length(rref);
+            if (Rref > 1.0)
+                dxdt.v -= (a.GM / std::pow(Rref, 3.0)) * rref;
         }
     }
 

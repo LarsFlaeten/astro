@@ -12,15 +12,20 @@ namespace astro {
 class Attractor
 {
 public:
-    Vec3   p;      // Position relative to the frame of reference
+    Vec3   p;      // Position relative to the frame of reference (ECI)
     double GM;
     // When true the indirect (tidal) correction is applied:
-    //   a += GM * p / |p|³
-    // This is required for any body that is NOT the central reference body
-    // (e.g. the Sun or Moon when integrating in a geocentric frame) so that
-    // only the differential tidal force perturbs the orbit rather than the
-    // full gravitational pull.
-    bool   tidal = false;
+    //   a -= GM * (p - tidalRefPos) / |p - tidalRefPos|³
+    // This cancels the acceleration of the dominant body toward this attractor,
+    // leaving only the true differential tidal force in the dominant body's
+    // co-falling frame.
+    //
+    // tidalRefPos must be set to the dominant body's ECI position (e.g. Mars
+    // position when in Mars orbit, or (0,0,0) = Earth when in Earth orbit).
+    // Using the wrong reference (e.g. Earth when near Mars) leaves a large
+    // spurious residual proportional to the difference in solar distance.
+    bool   tidal        = false;
+    Vec3   tidalRefPos  = Vec3(0.0);  // dominant body's ECI position
 };
 
 // Differential equation for translation. Separated from rotation because:
