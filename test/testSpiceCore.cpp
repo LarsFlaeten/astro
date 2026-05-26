@@ -526,13 +526,69 @@ TEST_F(SpiceCoreTest, getPlanetaryConstantsTest)
 
     Vec3 radii2;
     astro::Spice().getPlanetaryConstants(399, "RADII", radii2);
-    ASSERT_EQ(radii[0], radii2.x);   
-    ASSERT_EQ(radii[1], radii2.y);   
-    ASSERT_EQ(radii[2], radii2.z);   
+    ASSERT_EQ(radii[0], radii2.x);
+    ASSERT_EQ(radii[1], radii2.y);
+    ASSERT_EQ(radii[2], radii2.z);
+}
 
+// ---------------------------------------------------------------------------
+// bodyNameToId tests
+// ---------------------------------------------------------------------------
 
- 
+TEST_F(SpiceCoreTest, bodyNameToId_KnownBodies)
+{
+    // Well-known NAIF IDs that must never change.
+    EXPECT_EQ(astro::Spice().bodyNameToId("EARTH"), 399);
+    EXPECT_EQ(astro::Spice().bodyNameToId("MOON"),  301);
+    EXPECT_EQ(astro::Spice().bodyNameToId("SUN"),    10);
+    EXPECT_EQ(astro::Spice().bodyNameToId("MARS"),    4);
+    EXPECT_EQ(astro::Spice().bodyNameToId("JUPITER"), 5);
+    EXPECT_EQ(astro::Spice().bodyNameToId("SATURN"),  6);
+}
 
+TEST_F(SpiceCoreTest, bodyNameToId_CaseInsensitive)
+{
+    // SPICE bodn2c_c is case-insensitive.
+    EXPECT_EQ(astro::Spice().bodyNameToId("earth"), 399);
+    EXPECT_EQ(astro::Spice().bodyNameToId("Earth"), 399);
+    EXPECT_EQ(astro::Spice().bodyNameToId("moon"),  301);
+}
+
+TEST_F(SpiceCoreTest, bodyNameToId_UnknownBodyThrows)
+{
+    EXPECT_THROW(astro::Spice().bodyNameToId("NOTAPLANET"), astro::SpiceException);
+    EXPECT_THROW(astro::Spice().bodyNameToId(""),            astro::SpiceException);
+}
+
+TEST_F(SpiceCoreTest, bodyNameToId_IdUsableInSubsequentCalls)
+{
+    // Verify the returned id can be used directly in getRelativeGeometricState.
+    astro::EphemerisTime et = astro::EphemerisTime::fromString("2025-01-01 00:00 UTC");
+
+    const int moonId  = astro::Spice().bodyNameToId("MOON");
+    const int earthId = astro::Spice().bodyNameToId("EARTH");
+
+    astro::PosState stateByName, stateById;
+    // Reference: Moon relative to Earth by hardcoded id (301 vs 399).
+    astro::Spice().getRelativeGeometricState(301, 399, et, stateByName);
+    astro::Spice().getRelativeGeometricState(moonId, earthId, et, stateById);
+
+    EXPECT_DOUBLE_EQ(stateByName.r.x, stateById.r.x);
+    EXPECT_DOUBLE_EQ(stateByName.r.y, stateById.r.y);
+    EXPECT_DOUBLE_EQ(stateByName.r.z, stateById.r.z);
+}
+
+TEST_F(SpiceCoreTest, bodyNameToId_GmLookupRoundtrip)
+{
+    // Id from name should work for planetary-constant queries too.
+    astro::Spice().loadKernel("../data/spice/pck/pck00010.tpc");
+
+    const int id = astro::Spice().bodyNameToId("EARTH");
+    double mu = 0.0;
+    ASSERT_NO_THROW(astro::Spice().getPlanetaryConstants(id, "GM", mu));
+    // Earth GM ≈ 398600 km³/s² — just verify it's in the right ballpark.
+    EXPECT_GT(mu, 390000.0);
+    EXPECT_LT(mu, 410000.0);
 }
 
 
