@@ -237,6 +237,19 @@ void   SpiceCore::getPlanetaryConstants(int id, const std::string& item, Vec3& v
     getPlanetaryConstants(id, item, 3, &(val.x));
 }
 
+int SpiceCore::bodyNameToId(const std::string& name)
+{
+    SpiceInt     id;
+    SpiceBoolean found;
+    {
+        std::lock_guard<std::mutex> lock(m);
+        bodn2c_c(name.c_str(), &id, &found);
+    }
+    if (!found)
+        throw SpiceException("bodyNameToId: unknown body name \"" + name + "\"");
+    return static_cast<int>(id);
+}
+
 // Prints various information about spice core
 std::ostream& operator << (std::ostream& os, const SpiceCore& s)
 {

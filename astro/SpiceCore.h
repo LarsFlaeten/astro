@@ -81,6 +81,10 @@ public:
     void    getPlanetaryConstants(int id, const std::string& item, double& val);
     void    getPlanetaryConstants(int id, const std::string& item, Vec3& val);
 
+    // Resolve a body name string (e.g. "EARTH", "MOON", "MARS") to its NAIF integer id.
+    // Throws SpiceException if the name is not recognised (kernels must be loaded).
+    int     bodyNameToId(const std::string& name);
+
 
 
 
