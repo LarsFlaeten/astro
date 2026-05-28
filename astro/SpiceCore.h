@@ -2,6 +2,7 @@
 #define _INCLUDE_SPICE_CORE_H_
 
 #include <mutex>
+#include <optional>
 #include <vector>
 #include <string>
 
@@ -83,7 +84,10 @@ public:
 
     // Resolve a body name string (e.g. "EARTH", "MOON", "MARS") to its NAIF integer id.
     // Throws SpiceException if the name is not recognised (kernels must be loaded).
-    int     bodyNameToId(const std::string& name);
+    int                  bodyNameToId(const std::string& name);
+
+    // Non-throwing variant — returns nullopt if the name is not recognised.
+    std::optional<int>   tryBodyNameToId(const std::string& name);
 
 
 

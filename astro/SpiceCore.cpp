@@ -239,6 +239,14 @@ void   SpiceCore::getPlanetaryConstants(int id, const std::string& item, Vec3& v
 
 int SpiceCore::bodyNameToId(const std::string& name)
 {
+    auto result = tryBodyNameToId(name);
+    if (!result)
+        throw SpiceException("bodyNameToId: unknown body name \"" + name + "\"");
+    return *result;
+}
+
+std::optional<int> SpiceCore::tryBodyNameToId(const std::string& name)
+{
     SpiceInt     id;
     SpiceBoolean found;
     {
@@ -246,7 +254,7 @@ int SpiceCore::bodyNameToId(const std::string& name)
         bodn2c_c(name.c_str(), &id, &found);
     }
     if (!found)
-        throw SpiceException("bodyNameToId: unknown body name \"" + name + "\"");
+        return std::nullopt;
     return static_cast<int>(id);
 }
 
