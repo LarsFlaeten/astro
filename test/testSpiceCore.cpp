@@ -600,4 +600,48 @@ TEST_F(BodyNameToIdTest, GmLookupRoundtrip)
     EXPECT_LT(mu, 410000.0);
 }
 
+// ---------------------------------------------------------------------------
+// tryBodyNameToId tests — same fixture (LSK only, built-in name table).
+// ---------------------------------------------------------------------------
+
+TEST_F(BodyNameToIdTest, TryKnownBodiesReturnValue)
+{
+    // SPICE resolves planet names to planet-centre IDs (x99), not barycenters.
+    EXPECT_EQ(astro::Spice().tryBodyNameToId("EARTH"),   std::optional<int>(399));
+    EXPECT_EQ(astro::Spice().tryBodyNameToId("MOON"),    std::optional<int>(301));
+    EXPECT_EQ(astro::Spice().tryBodyNameToId("SUN"),     std::optional<int>(10));
+    EXPECT_EQ(astro::Spice().tryBodyNameToId("MARS"),    std::optional<int>(499));
+    EXPECT_EQ(astro::Spice().tryBodyNameToId("JUPITER"), std::optional<int>(599));
+    EXPECT_EQ(astro::Spice().tryBodyNameToId("SATURN"),  std::optional<int>(699));
+}
+
+TEST_F(BodyNameToIdTest, TryUnknownBodyReturnsNullopt)
+{
+    EXPECT_EQ(astro::Spice().tryBodyNameToId("NOTAPLANET"), std::nullopt);
+    EXPECT_EQ(astro::Spice().tryBodyNameToId(""),            std::nullopt);
+}
+
+TEST_F(BodyNameToIdTest, TryCaseInsensitive)
+{
+    EXPECT_EQ(astro::Spice().tryBodyNameToId("earth"), std::optional<int>(399));
+    EXPECT_EQ(astro::Spice().tryBodyNameToId("Earth"), std::optional<int>(399));
+    EXPECT_EQ(astro::Spice().tryBodyNameToId("moon"),  std::optional<int>(301));
+}
+
+TEST_F(BodyNameToIdTest, TryDoesNotThrow)
+{
+    EXPECT_NO_THROW(astro::Spice().tryBodyNameToId("NOTAPLANET"));
+    EXPECT_NO_THROW(astro::Spice().tryBodyNameToId(""));
+}
+
+TEST_F(BodyNameToIdTest, TryConsistentWithBodyNameToId)
+{
+    // tryBodyNameToId and bodyNameToId must agree on known bodies.
+    for (const char* name : { "EARTH", "MOON", "SUN", "MARS", "VENUS", "SATURN" }) {
+        auto opt = astro::Spice().tryBodyNameToId(name);
+        ASSERT_TRUE(opt.has_value()) << "tryBodyNameToId returned nullopt for " << name;
+        EXPECT_EQ(*opt, astro::Spice().bodyNameToId(name)) << "mismatch for " << name;
+    }
+}
+
 
