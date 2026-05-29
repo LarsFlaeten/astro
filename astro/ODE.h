@@ -47,6 +47,7 @@ public:
 
     virtual void addAttractor(const Attractor& a);
     virtual void clearAttractors();
+    const std::vector<Attractor>& getAttractors() const { return attractors; }
 
     // Set spacecraft mass (kg). Required when a non-zero force is applied.
     void setMass(double mass_kg);
